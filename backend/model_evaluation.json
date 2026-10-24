@@ -1,0 +1,151 @@
+{
+  "timestamp": "2026-10-24 19:11:34",
+  "dataset_rows_cleaned": 137434,
+  "selected_model": "LogisticRegression",
+  "selected_metrics": {
+    "model_name": "LogisticRegression (Class-Weighted)",
+    "accuracy": 0.9597627969585623,
+    "precision_class_1": 0.9965221611129085,
+    "recall_class_1": 0.9205768081291094,
+    "f1_class_1": 0.9570452073947491,
+    "precision_macro": 0.9631159373970282,
+    "recall_macro": 0.9587639057308668,
+    "f1_macro": 0.9596010954512924,
+    "confusion_matrix": {
+      "tn": 14060,
+      "fp": 43,
+      "fn": 1063,
+      "tp": 12321
+    },
+    "false_positive_rate": 0.003048996667375736,
+    "false_negative_rate": 0.07942319187089061,
+    "train_time_sec": 2.39,
+    "test_time_sec": 0.01
+  },
+  "baseline_comparison": {
+    "MultinomialNB": {
+      "model_name": "MultinomialNB (Baseline)",
+      "accuracy": 0.9179248371957652,
+      "precision_class_1": 0.9683501683501684,
+      "recall_class_1": 0.8595337716676629,
+      "f1_class_1": 0.9107029765674477,
+      "precision_macro": 0.9239456999244274,
+      "recall_macro": 0.9164363887764677,
+      "f1_macro": 0.9173844738104825,
+      "confusion_matrix": {
+        "tn": 13727,
+        "fp": 376,
+        "fn": 1880,
+        "tp": 11504
+      },
+      "false_positive_rate": 0.026660994114727363,
+      "false_negative_rate": 0.14046622833233713,
+      "train_time_sec": 0.12,
+      "test_time_sec": 0.02
+    },
+    "LogisticRegression": {
+      "model_name": "LogisticRegression (Class-Weighted)",
+      "accuracy": 0.9597627969585623,
+      "precision_class_1": 0.9965221611129085,
+      "recall_class_1": 0.9205768081291094,
+      "f1_class_1": 0.9570452073947491,
+      "precision_macro": 0.9631159373970282,
+      "recall_macro": 0.9587639057308668,
+      "f1_macro": 0.9596010954512924,
+      "confusion_matrix": {
+        "tn": 14060,
+        "fp": 43,
+        "fn": 1063,
+        "tp": 12321
+      },
+      "false_positive_rate": 0.003048996667375736,
+      "false_negative_rate": 0.07942319187089061,
+      "train_time_sec": 2.39,
+      "test_time_sec": 0.01
+    }
+  },
+  "vectorizer_config": {
+    "token_pattern": "(?u)\\b[a-zA-Z_]\\w*\\b",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 2,
+    "max_features": 50000,
+    "sublinear_tf": true
+  },
+  "diagnostic_samples": [
+    {
+      "input": "7",
+      "description": "Single digit numeric string (Normal)",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0482
+    },
+    {
+      "input": "1",
+      "description": "Single digit numeric string (Normal/Query id)",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0482
+    },
+    {
+      "input": "hello world",
+      "description": "Normal conversational text",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0232
+    },
+    {
+      "input": "normal user login request",
+      "description": "Normal text query",
+      "prediction": "SAFE",
+      "malicious_probability": 0.1951
+    },
+    {
+      "input": "SELECT * FROM users WHERE 1=1",
+      "description": "Classic SQL injection",
+      "prediction": "MALICIOUS",
+      "malicious_probability": 0.9859
+    },
+    {
+      "input": "admin' --",
+      "description": "SQL comment injection",
+      "prediction": "MALICIOUS",
+      "malicious_probability": 0.878
+    },
+    {
+      "input": "' OR '1'='1",
+      "description": "SQL tautology injection",
+      "prediction": "MALICIOUS",
+      "malicious_probability": 1.0
+    },
+    {
+      "input": "<script>alert(1)</script>",
+      "description": "XSS script payload",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0422
+    },
+    {
+      "input": "../../etc/passwd",
+      "description": "Path traversal payload",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0586
+    },
+    {
+      "input": "cat /etc/passwd",
+      "description": "Command injection string",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0472
+    },
+    {
+      "input": "47209",
+      "description": "Dataset normal postal/id code",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0482
+    },
+    {
+      "input": "my account profile",
+      "description": "Benign navigation query",
+      "prediction": "SAFE",
+      "malicious_probability": 0.0459
+    }
+  ]
+}
