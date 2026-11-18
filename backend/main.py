@@ -65,6 +65,7 @@ app.add_middleware(
 
 FRONTEND_FILE = Path(__file__).resolve().parent.parent / "frontend" / "frontend.html"
 MODEL_EVAL_FILE = Path(__file__).resolve().parent / "model_evaluation.json"
+PDF_DOC_FILE = Path(__file__).resolve().parent.parent / "Malicious_Input_Detector_Documentation.pdf"
 
 # In-memory circular buffer for scan history (max 50 items)
 # Privacy-conscious: truncates long text, does not persist to disk
@@ -172,6 +173,18 @@ def serve_frontend():
         "message": "Hybrid Malicious Input Detector API is running. Frontend file not found at expected path.",
         "docs": "/docs"
     }
+
+
+@app.get("/download-pdf", tags=["Documentation"])
+def download_pdf_documentation():
+    """Downloads the official complete PDF documentation."""
+    if PDF_DOC_FILE.exists():
+        return FileResponse(
+            path=PDF_DOC_FILE,
+            filename="Malicious_Input_Detector_Documentation.pdf",
+            media_type="application/pdf"
+        )
+    raise HTTPException(status_code=404, detail="PDF documentation not generated yet.")
 
 
 @app.get("/health", tags=["System"])
