@@ -55,7 +55,7 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  padding:32px 16px 64px;
+  padding:24px 16px 64px;
   position:relative;
   overflow-x:hidden;
 }
@@ -73,7 +73,7 @@ body::before{
 .console{
   position:relative;
   width:100%;
-  max-width:980px;
+  max-width:1040px;
   background:linear-gradient(180deg,var(--panel-raised),var(--panel));
   border:1px solid var(--border);
   border-radius:14px;
@@ -86,7 +86,7 @@ body::before{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:14px 20px;
+  padding:14px 22px;
   background:rgba(6,9,16,0.85);
   border-bottom:1px solid var(--border);
   backdrop-filter:blur(10px);
@@ -99,18 +99,18 @@ body::before{
 }
 
 .sig-icon{
-  width:28px;
-  height:28px;
-  border-radius:6px;
-  background:linear-gradient(135deg,rgba(79,168,255,0.2),rgba(53,211,153,0.15));
+  width:30px;
+  height:30px;
+  border-radius:7px;
+  background:linear-gradient(135deg,rgba(79,168,255,0.25),rgba(53,211,153,0.18));
   border:1px solid var(--scan-dim);
   display:flex;
   align-items:center;
   justify-content:center;
   color:var(--scan);
   font-family:var(--mono);
-  font-weight:700;
-  font-size:13px;
+  font-weight:800;
+  font-size:14px;
 }
 
 .brand-text h1{
@@ -166,12 +166,14 @@ body::before{
   background:var(--bg-deep);
   border-bottom:1px solid var(--border);
   overflow-x:auto;
+  scrollbar-width:none;
 }
+.nav-tabs::-webkit-scrollbar{ display:none; }
 
 .tab-btn{
   flex:1;
-  min-width:140px;
-  padding:12px 14px;
+  min-width:130px;
+  padding:13px 12px;
   background:transparent;
   border:none;
   border-bottom:2px solid transparent;
@@ -179,14 +181,14 @@ body::before{
   font-family:var(--mono);
   font-size:11px;
   font-weight:600;
-  letter-spacing:0.05em;
-  text-transform:uppercase;
+  letter-spacing:0.03em;
   cursor:pointer;
   transition:all 0.2s ease;
   display:flex;
   align-items:center;
   justify-content:center;
-  gap:8px;
+  gap:6px;
+  white-space:nowrap;
 }
 
 .tab-btn:hover{
@@ -194,23 +196,15 @@ body::before{
   background:rgba(255,255,255,0.02);
 }
 
+.tab-btn:focus-visible{
+  outline:2px solid var(--scan);
+  outline-offset:-2px;
+}
+
 .tab-btn.active{
   color:var(--scan);
   border-bottom-color:var(--scan);
-  background:rgba(79,168,255,0.06);
-}
-
-.tab-badge{
-  font-size:9px;
-  padding:2px 6px;
-  border-radius:4px;
-  background:var(--border);
-  color:var(--text-dim);
-}
-
-.tab-btn.active .tab-badge{
-  background:var(--scan-dim);
-  color:var(--scan);
+  background:rgba(79,168,255,0.07);
 }
 
 /* MAIN CONTENT CONTAINER */
@@ -220,6 +214,12 @@ body::before{
 }
 .tab-pane.active{
   display:block;
+  animation:fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(4px);}
+  to{opacity:1;transform:translateY(0);}
 }
 
 /* QUICK LOAD CHIPS BAR */
@@ -261,30 +261,7 @@ body::before{
 .chip.chip-safe{ border-color:rgba(53,211,153,0.3); color:var(--safe); }
 .chip.chip-mal{ border-color:rgba(255,77,109,0.3); color:var(--danger); }
 
-/* SCANNER CONTROLS */
-.mode-toggle{
-  display:flex;
-  gap:10px;
-  margin-bottom:16px;
-}
-.mode-btn{
-  padding:8px 16px;
-  background:var(--bg-deep);
-  border:1px solid var(--border);
-  border-radius:6px;
-  color:var(--text-dim);
-  font-family:var(--mono);
-  font-size:12px;
-  font-weight:600;
-  cursor:pointer;
-  transition:all 0.2s;
-}
-.mode-btn.active{
-  border-color:var(--scan);
-  color:var(--scan);
-  background:rgba(79,168,255,0.08);
-}
-
+/* INPUT BOX & CONTROLS */
 .input-shell{
   position:relative;
   background:var(--bg-deep);
@@ -297,9 +274,9 @@ body::before{
   box-shadow:0 0 0 2px rgba(79,168,255,0.15);
 }
 
-textarea#mainInput{
+textarea#mainInput, textarea#urlScannerInput{
   width:100%;
-  height:92px;
+  height:94px;
   background:transparent;
   border:none;
   padding:14px;
@@ -315,7 +292,7 @@ textarea#mainInput{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:8px 14px;
+  padding:9px 14px;
   border-top:1px solid rgba(35,47,69,0.5);
   font-family:var(--mono);
   font-size:11px;
@@ -324,6 +301,7 @@ textarea#mainInput{
 
 .btn-group{
   display:flex;
+  align-items:center;
   gap:10px;
 }
 
@@ -336,9 +314,14 @@ textarea#mainInput{
   cursor:pointer;
   transition:all 0.2s;
   border:none;
-  display:flex;
+  display:inline-flex;
   align-items:center;
   gap:6px;
+  user-select:none;
+}
+.btn:focus-visible{
+  outline:2px solid var(--scan);
+  outline-offset:2px;
 }
 
 .btn-primary{
@@ -346,7 +329,7 @@ textarea#mainInput{
   color:#fff;
   box-shadow:0 2px 10px rgba(59,130,246,0.3);
 }
-.btn-primary:hover{
+.btn-primary:hover:not(:disabled){
   background:linear-gradient(135deg,#60a5fa,#3b82f6);
   box-shadow:0 4px 16px rgba(59,130,246,0.4);
 }
@@ -360,15 +343,29 @@ textarea#mainInput{
   border:1px solid var(--border);
   color:var(--text-dim);
 }
-.btn-secondary:hover{
+.btn-secondary:hover:not(:disabled){
   border-color:var(--border-bright);
   color:var(--text);
+}
+
+.btn-danger{
+  background:rgba(255,77,109,0.15);
+  border:1px solid var(--danger);
+  color:var(--danger);
+}
+.btn-danger:hover:not(:disabled){
+  background:rgba(255,77,109,0.25);
+}
+
+.btn-sm{
+  padding:5px 10px;
+  font-size:11px;
 }
 
 /* WAVE OSCILLOSCOPE */
 .wave-container{
   margin:20px 0;
-  padding:16px 20px;
+  padding:14px 18px;
   background:var(--bg-deep);
   border:1px solid var(--border);
   border-radius:8px;
@@ -378,7 +375,7 @@ textarea#mainInput{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:10px;
+  margin-bottom:8px;
   font-family:var(--mono);
   font-size:11px;
 }
@@ -399,12 +396,12 @@ textarea#mainInput{
 
 canvas#waveCanvas{
   width:100%;
-  height:76px;
+  height:72px;
   display:block;
   border-radius:4px;
 }
 
-/* RESULTS PANEL */
+/* EXPLAINABLE RESULT PANEL */
 .result-box{
   display:none;
   margin-top:20px;
@@ -415,12 +412,7 @@ canvas#waveCanvas{
 }
 .result-box.show{
   display:block;
-  animation:fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(8px);}
-  to{opacity:1;transform:translateY(0);}
+  animation:fadeIn 0.25s ease;
 }
 
 .result-banner{
@@ -429,6 +421,8 @@ canvas#waveCanvas{
   align-items:center;
   justify-content:space-between;
   border-bottom:1px solid var(--border);
+  flex-wrap:wrap;
+  gap:12px;
 }
 .result-banner.tone-safe{
   background:linear-gradient(90deg,rgba(53,211,153,0.12),transparent);
@@ -447,17 +441,25 @@ canvas#waveCanvas{
   display:flex;
   align-items:center;
   gap:12px;
+  flex-wrap:wrap;
 }
 .verdict-badge{
   font-size:16px;
   font-weight:800;
   font-family:var(--mono);
+  letter-spacing:0.04em;
 }
 .tone-safe .verdict-badge{ color:var(--safe); }
 .tone-danger .verdict-badge{ color:var(--danger); }
 .tone-error .verdict-badge{ color:var(--warn); }
 
-.risk-pill{
+.pill-group{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  flex-wrap:wrap;
+}
+.status-pill-badge{
   font-family:var(--mono);
   font-size:10px;
   font-weight:700;
@@ -468,27 +470,172 @@ canvas#waveCanvas{
 .risk-high{ background:rgba(255,77,109,0.2); color:var(--danger); border:1px solid var(--danger); }
 .risk-medium{ background:rgba(255,180,84,0.2); color:var(--warn); border:1px solid var(--warn); }
 .risk-none{ background:rgba(53,211,153,0.2); color:var(--safe); border:1px solid var(--safe); }
+.type-pill{ background:rgba(79,168,255,0.15); color:var(--scan); border:1px solid var(--scan-dim); }
 
 .result-body{
   padding:20px;
 }
-.result-explanation{
-  font-size:13px;
+
+.verdict-summary-card{
+  background:var(--bg-deep);
+  border-left:3px solid var(--scan);
+  border-radius:4px;
+  padding:14px 16px;
+  margin-bottom:18px;
+}
+.verdict-summary-text{
+  font-size:14px;
   line-height:1.6;
   color:var(--text);
-  margin-bottom:18px;
-  padding:12px 14px;
-  background:var(--bg-deep);
-  border-left:3px solid var(--border-bright);
-  border-radius:4px;
+  margin:0;
 }
 
-/* STAGES GRID */
+/* RISK INDICATORS LIST */
+.risk-indicators-box{
+  background:rgba(255,77,109,0.06);
+  border:1px solid rgba(255,77,109,0.25);
+  border-radius:6px;
+  padding:12px 16px;
+  margin-bottom:18px;
+}
+.risk-indicators-title{
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:700;
+  color:var(--danger);
+  margin-bottom:6px;
+  text-transform:uppercase;
+}
+.risk-indicators-list{
+  margin:0;
+  padding-left:18px;
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:12px;
+  line-height:1.6;
+}
+
+/* EXPANDABLE SECTION (RULE-BY-RULE) */
+.accordion-box{
+  border:1px solid var(--border);
+  border-radius:8px;
+  background:var(--bg-deep);
+  margin-bottom:18px;
+  overflow:hidden;
+}
+.accordion-header{
+  padding:12px 16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:rgba(255,255,255,0.02);
+  cursor:pointer;
+  user-select:none;
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  color:var(--scan);
+  transition:background 0.15s;
+}
+.accordion-header:hover{
+  background:rgba(79,168,255,0.06);
+}
+.accordion-icon{
+  transition:transform 0.2s ease;
+  font-size:12px;
+}
+.accordion-box.open .accordion-icon{
+  transform:rotate(180deg);
+}
+.accordion-content{
+  display:none;
+  padding:16px;
+  border-top:1px solid var(--border);
+}
+.accordion-box.open .accordion-content{
+  display:block;
+}
+
+/* CONCEPT EXPLANATION TABLE */
+.explain-table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:12px;
+}
+.explain-table th{
+  font-family:var(--mono);
+  font-size:11px;
+  text-align:left;
+  padding:10px 12px;
+  background:var(--panel-raised);
+  border-bottom:1px solid var(--border);
+  color:var(--text-faint);
+  text-transform:uppercase;
+}
+.explain-table td{
+  padding:12px;
+  border-bottom:1px solid rgba(35,47,69,0.3);
+  vertical-align:top;
+  line-height:1.5;
+}
+.explain-table tr:last-child td{
+  border-bottom:none;
+}
+.concept-tag{
+  font-family:var(--mono);
+  font-weight:700;
+  color:var(--text);
+  font-size:12px;
+}
+.status-tag{
+  font-family:var(--mono);
+  font-size:10px;
+  font-weight:700;
+  padding:2px 7px;
+  border-radius:3px;
+  display:inline-block;
+}
+.status-tag.triggered{ background:rgba(255,77,109,0.2); color:var(--danger); border:1px solid var(--danger); }
+.status-tag.passed{ background:rgba(53,211,153,0.15); color:var(--safe); border:1px solid var(--safe); }
+.status-tag.na{ background:rgba(151,164,189,0.15); color:var(--text-dim); border:1px solid var(--border); }
+
+/* DECISION BREAKDOWN CARD */
+.breakdown-box{
+  background:rgba(6,9,16,0.7);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:16px;
+  margin-bottom:18px;
+}
+.breakdown-title{
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:700;
+  color:var(--scan);
+  margin-bottom:10px;
+  text-transform:uppercase;
+}
+.breakdown-grid{
+  display:grid;
+  grid-template-columns:140px 1fr;
+  gap:8px 14px;
+  font-size:12px;
+  line-height:1.5;
+}
+.breakdown-label{
+  font-family:var(--mono);
+  color:var(--text-faint);
+  font-size:11px;
+}
+.breakdown-value{
+  color:var(--text);
+}
+
+/* 4-STAGE ARCHITECTURE CARDS */
 .stages-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(210px,1fr));
   gap:12px;
-  margin-top:16px;
 }
 .stage-card{
   background:var(--bg-deep);
@@ -511,19 +658,13 @@ canvas#waveCanvas{
 }
 .stage-status{
   font-family:var(--mono);
-  font-size:11px;
+  font-size:10px;
   font-weight:700;
   padding:2px 6px;
   border-radius:3px;
 }
-.stage-status.detected{
-  background:rgba(255,77,109,0.2);
-  color:var(--danger);
-}
-.stage-status.clear{
-  background:rgba(53,211,153,0.15);
-  color:var(--safe);
-}
+.stage-status.detected{ background:rgba(255,77,109,0.2); color:var(--danger); }
+.stage-status.clear{ background:rgba(53,211,153,0.15); color:var(--safe); }
 .stage-card-title{
   font-family:var(--mono);
   font-size:12px;
@@ -537,44 +678,35 @@ canvas#waveCanvas{
   line-height:1.4;
 }
 
-/* URL COMPONENTS TABLE */
-.url-inspector{
-  margin-top:18px;
-  background:var(--bg-deep);
-  border:1px solid var(--border);
-  border-radius:8px;
-  padding:14px;
-}
-.url-inspector-title{
-  font-family:var(--mono);
-  font-size:12px;
-  font-weight:700;
-  color:var(--scan);
-  margin-bottom:10px;
-  text-transform:uppercase;
-}
-.url-grid{
-  display:grid;
-  grid-template-columns:120px 1fr;
-  gap:6px 12px;
-  font-family:var(--mono);
-  font-size:11px;
-}
-.url-grid-k{ color:var(--text-faint); }
-.url-grid-v{ color:var(--text); word-break:break-all; }
-
-/* DFA VISUALIZER */
-.dfa-viewer-box{
+/* COMMON SECTION BOX */
+.section-panel{
   background:var(--bg-deep);
   border:1px solid var(--border);
   border-radius:8px;
   padding:20px;
 }
+.section-heading{
+  margin-top:0;
+  font-family:var(--mono);
+  font-size:15px;
+  color:var(--scan);
+  margin-bottom:6px;
+}
+.section-lead{
+  font-size:12px;
+  color:var(--text-dim);
+  line-height:1.5;
+  margin-top:0;
+  margin-bottom:16px;
+}
+
+/* DFA VISUALIZER */
 .dfa-select-row{
   display:flex;
   gap:12px;
   align-items:center;
   margin-bottom:16px;
+  flex-wrap:wrap;
 }
 select.custom-select{
   background:var(--panel-raised);
@@ -585,6 +717,9 @@ select.custom-select{
   font-family:var(--mono);
   font-size:12px;
   outline:none;
+}
+select.custom-select:focus-visible{
+  border-color:var(--scan);
 }
 .state-diagram-container{
   margin:16px 0;
@@ -613,12 +748,10 @@ select.custom-select{
   display:flex;
   flex-direction:column;
   align-items:center;
-  min-width:64px;
+  min-width:68px;
   transition:all 0.25s ease;
 }
-.dfa-node.is-start{
-  border-color:var(--scan);
-}
+.dfa-node.is-start{ border-color:var(--scan); }
 .dfa-node.is-accept{
   border-style:double;
   border-width:4px;
@@ -635,9 +768,6 @@ select.custom-select{
   font-family:var(--mono);
   color:var(--text-faint);
   font-size:11px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
 }
 
 .trace-table{
@@ -655,7 +785,7 @@ select.custom-select{
   color:var(--text-faint);
 }
 .trace-table td{
-  padding:7px 10px;
+  padding:8px 10px;
   border-bottom:1px solid rgba(35,47,69,0.3);
   color:var(--text-dim);
 }
@@ -667,9 +797,9 @@ select.custom-select{
   font-weight:700;
 }
 
-/* REGEX & CFG EXPLORER */
+/* CODE / OUTPUT BOX */
 .code-box{
-  background:var(--bg-deep);
+  background:var(--panel);
   border:1px solid var(--border);
   border-radius:6px;
   padding:14px;
@@ -677,19 +807,21 @@ select.custom-select{
   font-size:12px;
   color:var(--text);
   overflow-x:auto;
+  line-height:1.6;
 }
 
+/* RULE CATALOG CARDS */
 .rule-cards-list{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
   gap:12px;
   margin-top:14px;
 }
 .rule-card-item{
-  background:var(--bg-deep);
+  background:var(--panel);
   border:1px solid var(--border);
   border-radius:8px;
-  padding:12px;
+  padding:14px;
   cursor:pointer;
   transition:all 0.15s;
 }
@@ -698,7 +830,7 @@ select.custom-select{
   background:rgba(79,168,255,0.04);
 }
 
-/* METRICS TABLE */
+/* ML METRICS GRID */
 .metrics-grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
@@ -706,7 +838,7 @@ select.custom-select{
   margin-bottom:20px;
 }
 .metric-box{
-  background:var(--bg-deep);
+  background:var(--panel);
   border:1px solid var(--border);
   border-radius:8px;
   padding:14px;
@@ -717,9 +849,53 @@ select.custom-select{
 .metric-box.metric-danger .val{ color:var(--danger); }
 .metric-box.metric-scan .val{ color:var(--scan); }
 
+/* URL INSPECTOR COMPONENTS */
+.url-grid{
+  display:grid;
+  grid-template-columns:130px 1fr;
+  gap:8px 12px;
+  font-family:var(--mono);
+  font-size:12px;
+  background:var(--panel);
+  padding:14px;
+  border-radius:6px;
+  border:1px solid var(--border);
+}
+.url-grid-k{ color:var(--text-faint); }
+.url-grid-v{ color:var(--text); word-break:break-all; }
+
+/* HISTORY TABLE & ACTIONS */
+.history-bar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.filter-group{
+  display:flex;
+  gap:6px;
+}
+.filter-btn{
+  background:transparent;
+  border:1px solid var(--border);
+  color:var(--text-dim);
+  font-family:var(--mono);
+  font-size:11px;
+  padding:4px 10px;
+  border-radius:4px;
+  cursor:pointer;
+}
+.filter-btn.active{
+  border-color:var(--scan);
+  color:var(--scan);
+  background:rgba(79,168,255,0.1);
+}
+
 /* FOOTER */
 .console-footer{
-  padding:14px 20px;
+  padding:14px 22px;
   background:var(--bg-deep);
   border-top:1px solid var(--border);
   display:flex;
@@ -728,6 +904,8 @@ select.custom-select{
   font-family:var(--mono);
   font-size:11px;
   color:var(--text-faint);
+  flex-wrap:wrap;
+  gap:8px;
 }
 </style>
 </head>
@@ -736,13 +914,13 @@ select.custom-select{
 
 <div class="console">
 
-  <!-- TOP HEADER -->
+  <!-- TOP BAR -->
   <div class="top-bar">
     <div class="brand-wrap">
       <div class="sig-icon">∑</div>
       <div class="brand-text">
         <h1>SIGNAL // Malicious Input Detector</h1>
-        <p>Hybrid Detection System &bull; Units III, IV, V (DSACT)</p>
+        <p>Hybrid Cybersecurity Engine &bull; Automata, Regular Languages &amp; Context-Free Grammars</p>
       </div>
     </div>
     <div class="status-pill" id="healthPill">
@@ -751,60 +929,43 @@ select.custom-select{
     </div>
   </div>
 
-  <!-- NAVIGATION TABS -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('scanTab', this)">
-      <span>Detection Console</span>
-      <span class="tab-badge">Main</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('dfaTab', this)">
-      <span>DFA Visualizer</span>
-      <span class="tab-badge">Unit III</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('regexTab', this)">
-      <span>Regex Playground</span>
-      <span class="tab-badge">Unit IV</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('cfgTab', this)">
-      <span>CFG Explorer</span>
-      <span class="tab-badge">Unit V</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('historyTab', this)">
-      <span>Telemetry &amp; ML</span>
-      <span class="tab-badge">Audit</span>
-    </button>
+  <!-- NAVIGATION TABS (Concept-Based Only) -->
+  <div class="nav-tabs" role="tablist">
+    <button class="tab-btn active" role="tab" onclick="switchTab('scanTab', this)">Detection Console</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('dfaTab', this)">DFA Visualizer</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('regexTab', this)">Regex Playground</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('cfgTab', this)">Grammar Analyzer</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('mlTab', this)">ML Analysis</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('urlTab', this)">URL/API Scanner</button>
+    <button class="tab-btn" role="tab" onclick="switchTab('historyTab', this)">Detection History</button>
   </div>
 
   <!-- ============================================================ -->
   <!-- TAB 1: DETECTION CONSOLE -->
   <!-- ============================================================ -->
-  <div class="tab-pane active" id="scanTab">
+  <div class="tab-pane active" id="scanTab" role="tabpanel">
     
-    <!-- EDUCATIONAL QUICK CHIPS -->
+    <!-- QUICK TEST CHIPS -->
     <div class="chip-bar">
       <span class="chip-label">Quick Test:</span>
-      <button class="chip chip-safe" onclick="loadSample('7', 'text')">'7' (Single Digit Safe)</button>
-      <button class="chip chip-safe" onclick="loadSample('hello world', 'text')">'hello world'</button>
-      <button class="chip chip-safe" onclick="loadSample('normal user login request', 'text')">Normal Login</button>
-      <button class="chip chip-mal" onclick="loadSample('admin\' OR 1=1 --', 'text')">SQLi: OR 1=1</button>
-      <button class="chip chip-mal" onclick="loadSample('\' UNION SELECT null, username, password FROM users --', 'text')">SQLi: UNION</button>
-      <button class="chip chip-mal" onclick="loadSample('<script>alert(1)</script>', 'text')">XSS: &lt;script&gt;</button>
-      <button class="chip chip-mal" onclick="loadSample('../../../etc/passwd', 'text')">Path Traversal</button>
-      <button class="chip chip-safe" onclick="loadSample('https://api.example.com/v1/products?id=7&category=books&page=1', 'url')">Safe URL</button>
-      <button class="chip chip-mal" onclick="loadSample('https://api.example.com/search?q=%27%20UNION%20SELECT%20username%2Cpassword%20FROM%20users%20--', 'url')">Attack URL</button>
-    </div>
-
-    <!-- MODE SWITCH -->
-    <div class="mode-toggle">
-      <button class="mode-btn active" id="btnModeText" onclick="setScanMode('text')">Text Input Scan</button>
-      <button class="mode-btn" id="btnModeUrl" onclick="setScanMode('url')">URL / API Parameter Scan</button>
+      <button class="chip chip-safe" onclick="loadSample('normal user login request')">Normal Login</button>
+      <button class="chip chip-safe" onclick="loadSample('7')">'7' (Single Digit)</button>
+      <button class="chip chip-safe" onclick="loadSample('hello world, please check my orders')">Normal Text</button>
+      <button class="chip chip-mal" onclick="loadSample('admin\' OR 1=1 --')">SQLi: OR 1=1</button>
+      <button class="chip chip-mal" onclick="loadSample('\' UNION SELECT null, username, password FROM users --')">SQLi: UNION</button>
+      <button class="chip chip-mal" onclick="loadSample('<script>alert(document.cookie)</script>')">XSS: &lt;script&gt;</button>
+      <button class="chip chip-mal" onclick="loadSample('../../../etc/passwd')">Path Traversal</button>
+      <button class="chip chip-mal" onclick="loadSample('; cat /etc/passwd')">Command Injection</button>
     </div>
 
     <!-- INPUT BOX -->
     <div class="input-shell">
-      <textarea id="mainInput" placeholder="Enter input text, SQL query, script payload, or API URL to inspect..."></textarea>
+      <textarea id="mainInput" placeholder="Enter text string, login request, SQL query, or script payload to inspect... (Press Ctrl+Enter to run scan)"></textarea>
       <div class="input-footer">
-        <span id="charCount">0 characters</span>
+        <div>
+          <span id="charCount">0 characters</span>
+          <span style="margin-left:12px;color:var(--text-faint);font-size:10px;">[Ctrl+Enter to Scan]</span>
+        </div>
         <div class="btn-group">
           <button class="btn btn-secondary" onclick="clearInput()">Clear</button>
           <button class="btn btn-primary" id="btnRunScan" onclick="executeScan()">Run Scan</button>
@@ -821,43 +982,97 @@ select.custom-select{
       <canvas id="waveCanvas"></canvas>
     </div>
 
-    <!-- RESULT PANEL -->
+    <!-- EXPLAINABLE DETECTION RESULTS PANEL -->
     <div class="result-box" id="resultPanel">
+      
+      <!-- A. OVERALL VERDICT BANNER -->
       <div class="result-banner" id="resultBanner">
         <div class="result-verdict-title">
           <span class="verdict-badge" id="verdictBadge">-</span>
-          <span class="risk-pill" id="riskPill">NONE</span>
+          <div class="pill-group">
+            <span class="status-pill-badge" id="riskPill">NONE</span>
+            <span class="status-pill-badge type-pill" id="inputTypePill">INPUT: -</span>
+          </div>
         </div>
-        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);" id="findingType">Finding: -</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);" id="findingType">Classification Mode: Hybrid</div>
       </div>
+
       <div class="result-body">
-        <div class="result-explanation" id="resultExplanation">
-          Analysis details will appear here.
+        
+        <!-- Short Plain English Explanation -->
+        <div class="verdict-summary-card">
+          <p class="verdict-summary-text" id="resultExplanation">Evaluation details will appear here.</p>
+        </div>
+
+        <!-- Risk Indicators (if detected) -->
+        <div class="risk-indicators-box" id="riskIndicatorsBox" style="display:none;">
+          <div class="risk-indicators-title">Observed Threat Indicators:</div>
+          <ul class="risk-indicators-list" id="riskIndicatorsList"></ul>
+        </div>
+
+        <!-- B. RULE-BY-RULE ANALYSIS (EXPANDABLE) -->
+        <div class="accordion-box open" id="explainAccordion">
+          <div class="accordion-header" onclick="toggleAccordion('explainAccordion')">
+            <span>Why was this classified this way? (Concept-by-Concept Analysis)</span>
+            <span class="accordion-icon">&#9660;</span>
+          </div>
+          <div class="accordion-content">
+            <table class="explain-table">
+              <thead>
+                <tr>
+                  <th style="width:160px;">Concept</th>
+                  <th style="width:110px;">Status</th>
+                  <th>Analysis &amp; Evidence</th>
+                </tr>
+              </thead>
+              <tbody id="ruleByRuleBody">
+                <!-- Injected via JavaScript from real backend response -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- C. DECISION BREAKDOWN -->
+        <div class="breakdown-box">
+          <div class="breakdown-title">Decision Breakdown</div>
+          <div class="breakdown-grid">
+            <div class="breakdown-label">Flagged Stages:</div>
+            <div class="breakdown-value" id="breakdownFlagged" style="color:var(--danger);font-weight:700;">None</div>
+
+            <div class="breakdown-label">Unflagged Stages:</div>
+            <div class="breakdown-value" id="breakdownUnflagged" style="color:var(--safe);">All stages cleared</div>
+
+            <div class="breakdown-label">Pipeline Policy:</div>
+            <div class="breakdown-value" id="breakdownPolicy">Deterministic Logical OR with ML Secondary Verification</div>
+
+            <div class="breakdown-label">Primary Cause:</div>
+            <div class="breakdown-value" id="breakdownCause" style="font-weight:600;">-</div>
+          </div>
         </div>
 
         <!-- 4-STAGE ARCHITECTURE CARDS -->
         <div class="stages-grid">
           <div class="stage-card">
             <div class="stage-card-header">
-              <span class="stage-num">Stage 1: Unit IV</span>
+              <span class="stage-num">Stage 1</span>
               <span class="stage-status clear" id="stage1Status">CLEAR</span>
             </div>
             <div class="stage-card-title">Regular Expressions</div>
-            <div class="stage-card-desc" id="stage1Desc">Signature matching for SQLi, XSS, and command injections.</div>
+            <div class="stage-card-desc" id="stage1Desc">Pre-compiled pattern matching for SQLi, XSS, and command injections.</div>
           </div>
 
           <div class="stage-card">
             <div class="stage-card-header">
-              <span class="stage-num">Stage 2: Unit III</span>
+              <span class="stage-num">Stage 2</span>
               <span class="stage-status clear" id="stage2Status">CLEAR</span>
             </div>
             <div class="stage-card-title">Finite Automata (DFA)</div>
-            <div class="stage-card-desc" id="stage2Desc">Deterministic state machine execution over input alphabet.</div>
+            <div class="stage-card-desc" id="stage2Desc">Deterministic state machine execution over input alphabet characters.</div>
           </div>
 
           <div class="stage-card">
             <div class="stage-card-header">
-              <span class="stage-num">Stage 3: Unit V</span>
+              <span class="stage-num">Stage 3</span>
               <span class="stage-status clear" id="stage3Status">CLEAR</span>
             </div>
             <div class="stage-card-title">Context-Free Grammar</div>
@@ -866,18 +1081,12 @@ select.custom-select{
 
           <div class="stage-card">
             <div class="stage-card-header">
-              <span class="stage-num">Stage 4: ML</span>
+              <span class="stage-num">Stage 4</span>
               <span class="stage-status clear" id="stage4Status">CLEAR</span>
             </div>
             <div class="stage-card-title">Machine Learning</div>
             <div class="stage-card-desc" id="stage4Desc">Logistic Regression &amp; TF-IDF probability calibration.</div>
           </div>
-        </div>
-
-        <!-- URL SPECIFIC BREAKDOWN -->
-        <div class="url-inspector" id="urlInspector" style="display:none;">
-          <div class="url-inspector-title">Normalized URL Components</div>
-          <div class="url-grid" id="urlGridContent"></div>
         </div>
 
       </div>
@@ -886,32 +1095,32 @@ select.custom-select{
   </div>
 
   <!-- ============================================================ -->
-  <!-- TAB 2: DFA VISUALIZER (UNIT III) -->
+  <!-- TAB 2: DFA VISUALIZER -->
   <!-- ============================================================ -->
-  <div class="tab-pane" id="dfaTab">
-    <div class="dfa-viewer-box">
-      <h3 style="margin-top:0;font-family:var(--mono);color:var(--scan);">Unit III: Deterministic Finite Automata (DFA) Visualizer</h3>
-      <p style="font-size:12px;color:var(--text-dim);line-height:1.5;">
-        A DFA is formally defined as <code>M = (Q, Σ, δ, q0, F)</code>. Select an automaton below and step through its state transitions over sample input characters.
+  <div class="tab-pane" id="dfaTab" role="tabpanel">
+    <div class="section-panel">
+      <h3 class="section-heading">Deterministic Finite Automata (DFA) Visualizer</h3>
+      <p class="section-lead">
+        A DFA is formally defined as a 5-tuple <code>M = (Q, Σ, δ, q0, F)</code>. The automaton inspects the input string character-by-character, transitioning across states until termination.
       </p>
 
       <div class="dfa-select-row">
-        <label style="font-family:var(--mono);font-size:12px;color:var(--text-faint);">Active Automaton:</label>
+        <label style="font-family:var(--mono);font-size:12px;color:var(--text-faint);">Select Automaton:</label>
         <select class="custom-select" id="dfaSelect" onchange="onDfaSelected()">
-          <option value="SQL Comment DFA">SQL Comment DFA (Line &amp; Block Comment)</option>
-          <option value="HTML Script Tag DFA">HTML Script Tag DFA (&lt;script&gt; Opening)</option>
-          <option value="Path Traversal DFA">Path Traversal DFA (../ and ..\)</option>
-          <option value="SQL OR-Tautology DFA">SQL OR-Tautology DFA (OR 1=1)</option>
+          <option value="SQL Comment DFA">SQL Comment DFA (Line &amp; Block Comment: --, /*...*/)</option>
+          <option value="HTML Script Tag DFA">HTML Script Tag DFA (&lt;script&gt; Opening Tag)</option>
+          <option value="Path Traversal DFA">Path Traversal DFA (Directory Escapes: ../ and ..\)</option>
+          <option value="SQL OR-Tautology DFA">SQL OR-Tautology DFA (Injected ' OR 1=1)</option>
         </select>
         <button class="btn btn-primary" onclick="runDfaTrace()">Trace Execution</button>
       </div>
 
-      <div class="code-box" id="dfaSpecBox">
+      <div class="code-box" id="dfaSpecBox" style="margin-bottom:16px;">
         Loading formal DFA specification...
       </div>
 
       <div class="state-diagram-container">
-        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:8px;">STATE TRANSITION FLOW GRAPH:</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:8px;">STATE TRANSITION GRAPH:</div>
         <div class="dfa-nodes-flow" id="dfaNodesFlow"></div>
       </div>
 
@@ -920,15 +1129,15 @@ select.custom-select{
         <table class="trace-table" id="dfaTraceTable">
           <thead>
             <tr>
-              <th>Step</th>
-              <th>Input Symbol</th>
-              <th>Transition (δ)</th>
-              <th>Current State</th>
-              <th>Accepting?</th>
+              <th style="width:60px;">Step</th>
+              <th style="width:110px;">Symbol</th>
+              <th>Transition Formula (δ)</th>
+              <th style="width:140px;">Current State</th>
+              <th style="width:140px;">Accepting?</th>
             </tr>
           </thead>
           <tbody id="dfaTraceBody">
-            <tr><td colspan="5" style="text-align:center;color:var(--text-faint);">Run a trace to view step-by-step state progression.</td></tr>
+            <tr><td colspan="5" style="text-align:center;color:var(--text-faint);">Click "Trace Execution" to evaluate the input through this automaton.</td></tr>
           </tbody>
         </table>
       </div>
@@ -937,12 +1146,12 @@ select.custom-select{
   </div>
 
   <!-- ============================================================ -->
-  <!-- TAB 3: REGEX PLAYGROUND (UNIT IV) -->
+  <!-- TAB 3: REGEX PLAYGROUND -->
   <!-- ============================================================ -->
-  <div class="tab-pane" id="regexTab">
-    <div class="dfa-viewer-box">
-      <h3 style="margin-top:0;font-family:var(--mono);color:var(--scan);">Unit IV: Regular Expressions &amp; Pattern Languages</h3>
-      <p style="font-size:12px;color:var(--text-dim);line-height:1.5;">
+  <div class="tab-pane" id="regexTab" role="tabpanel">
+    <div class="section-panel">
+      <h3 class="section-heading">Regex Playground &amp; Security Rule Catalog</h3>
+      <p class="section-lead">
         Regular expressions define regular languages over alphabet Σ. Test expressions interactively against inputs or load pre-compiled cybersecurity rules.
       </p>
 
@@ -964,28 +1173,28 @@ select.custom-select{
         Result will appear here.
       </div>
 
-      <h4 style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:6px;">Stage 1 Security Rule Catalog (Click to Load):</h4>
+      <h4 style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:6px;">Pre-compiled Security Rule Catalog (Click to Load):</h4>
       <div class="rule-cards-list" id="ruleCardsContainer">
-        Loading rules...
+        Loading security rules...
       </div>
     </div>
   </div>
 
   <!-- ============================================================ -->
-  <!-- TAB 4: CFG EXPLORER (UNIT V) -->
+  <!-- TAB 4: GRAMMAR ANALYZER -->
   <!-- ============================================================ -->
-  <div class="tab-pane" id="cfgTab">
-    <div class="dfa-viewer-box">
-      <h3 style="margin-top:0;font-family:var(--mono);color:var(--scan);">Unit V: Context-Free Grammar (CFG) &amp; Derivations</h3>
-      <p style="font-size:12px;color:var(--text-dim);line-height:1.5;">
-        A Context-Free Grammar is formally defined as <code>G = (V, Σ, R, S)</code>. The parser applies recursive descent rules to derive SQL injection fragments and build derivation traces.
+  <div class="tab-pane" id="cfgTab" role="tabpanel">
+    <div class="section-panel">
+      <h3 class="section-heading">Grammar Analyzer &amp; Context-Free Parser</h3>
+      <p class="section-lead">
+        A Context-Free Grammar is defined as <code>G = (V, Σ, R, S)</code>. The parser applies recursive descent rules to derive SQL injection fragments and build derivation traces, distinguishing syntax manipulation from benign text.
       </p>
 
       <div class="code-box" id="cfgGrammarBox" style="margin-bottom:16px;">
         Loading grammar productions...
       </div>
 
-      <div class="input-shell" style="padding:10px 14px;margin-bottom:12px;">
+      <div class="input-shell" style="padding:10px 14px;margin-bottom:14px;">
         <label style="font-family:var(--mono);font-size:11px;color:var(--text-faint);display:block;margin-bottom:4px;">SAMPLE EXPRESSION TO PARSE:</label>
         <div style="display:flex;gap:10px;">
           <input type="text" id="cfgTextInput" style="flex:1;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;" value="OR 1=1">
@@ -994,53 +1203,178 @@ select.custom-select{
       </div>
 
       <div class="code-box" id="cfgParseOutput">
-        Parsed derivations and tree will appear here.
+        Parsed derivations and syntax tree will appear here.
       </div>
     </div>
   </div>
 
   <!-- ============================================================ -->
-  <!-- TAB 5: TELEMETRY & ML AUDIT -->
+  <!-- TAB 5: ML ANALYSIS -->
   <!-- ============================================================ -->
-  <div class="tab-pane" id="historyTab">
-    <div class="dfa-viewer-box">
-      <h3 style="margin-top:0;font-family:var(--mono);color:var(--scan);">Stage 4 Machine Learning Benchmark &amp; Telemetry</h3>
-      
+  <div class="tab-pane" id="mlTab" role="tabpanel">
+    <div class="section-panel">
+      <h3 class="section-heading">Machine Learning Analysis &amp; Generalization</h3>
+      <p class="section-lead">
+        Stage 4 employs a class-weighted Logistic Regression classifier trained on TF-IDF word and character n-grams. It provides generalized detection for obfuscated payloads while calibrating probability scores.
+      </p>
+
+      <!-- Benchmark Metrics -->
       <div class="metrics-grid">
         <div class="metric-box metric-primary">
-          <div class="label">Overall Accuracy</div>
-          <div class="val">95.98%</div>
+          <div class="label">Test Accuracy</div>
+          <div class="val" id="mlMetricAccuracy">95.98%</div>
         </div>
         <div class="metric-box metric-primary">
           <div class="label">F1-Score (Class 1)</div>
-          <div class="val">0.9570</div>
+          <div class="val" id="mlMetricF1">0.9570</div>
         </div>
         <div class="metric-box metric-scan">
           <div class="label">Precision (Class 1)</div>
-          <div class="val">99.65%</div>
+          <div class="val" id="mlMetricPrecision">99.65%</div>
         </div>
         <div class="metric-box metric-danger">
           <div class="label">False Positive Rate</div>
-          <div class="val">0.30%</div>
+          <div class="val" id="mlMetricFPR">0.30%</div>
         </div>
       </div>
 
-      <h4 style="font-family:var(--mono);font-size:12px;color:var(--text);margin-bottom:8px;">Recent Scan History (Privacy-Preserving Circular Buffer):</h4>
-      <table class="trace-table" id="historyTable">
+      <!-- Confusion Matrix Card -->
+      <div class="breakdown-box" style="margin-bottom:20px;">
+        <div class="breakdown-title">Test Set Confusion Matrix (N = 27,487 Held-Out Samples)</div>
+        <div class="breakdown-grid">
+          <div class="breakdown-label">True Negatives (TN):</div>
+          <div class="breakdown-value" id="cmTN">14,060 (Benign inputs correctly labeled Safe)</div>
+          <div class="breakdown-label">False Positives (FP):</div>
+          <div class="breakdown-value" id="cmFP" style="color:var(--danger)">43 (Benign inputs falsely flagged - 0.30%)</div>
+          <div class="breakdown-label">False Negatives (FN):</div>
+          <div class="breakdown-value" id="cmFN" style="color:var(--warn)">1,063 (Attacks missed by ML alone)</div>
+          <div class="breakdown-label">True Positives (TP):</div>
+          <div class="breakdown-value" id="cmTP" style="color:var(--safe)">12,321 (Attacks correctly detected)</div>
+        </div>
+      </div>
+
+      <!-- Interactive ML Playground -->
+      <div class="input-shell" style="padding:14px;margin-bottom:14px;">
+        <label style="font-family:var(--mono);font-size:11px;color:var(--text-faint);display:block;margin-bottom:6px;">TEST INPUT EXCLUSIVELY ON ML MODEL:</label>
+        <div style="display:flex;gap:10px;">
+          <input type="text" id="mlStandaloneInput" style="flex:1;background:transparent;border:none;color:var(--text);font-family:var(--mono);font-size:13px;outline:none;" value="7">
+          <button class="btn btn-primary" onclick="testStandaloneMl()">Evaluate ML</button>
+        </div>
+      </div>
+
+      <div class="code-box" id="mlStandaloneOutput" style="margin-bottom:18px;">
+        ML inference result will appear here.
+      </div>
+
+      <!-- Architecture Deep Dive -->
+      <div class="breakdown-box">
+        <div class="breakdown-title">Academic Architecture &amp; Calibration Notes</div>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.6;margin:0 0 10px;">
+          &bull; <b>Handling Numeric Inputs ('7'):</b> In naive TF-IDF vectorizers, single numeric digits produce zero-vectors that can arbitrarily default to the majority class. Our pipeline maps single digits and unigram numbers to a calibrated baseline benign probability (4.82% malicious, 95.18% safe), completely preventing false positives on IDs, postal codes, and integers.
+        </p>
+        <p style="font-size:12px;color:var(--text-dim);line-height:1.6;margin:0 0 10px;">
+          &bull; <b>Hybrid Complementarity:</b> Statistical models cannot replace formal languages. Payloads like <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> may yield low ML probabilities in natural language corpora, but are caught with 100% precision by Stage 1 (Regex) and Stage 2 (DFA).
+        </p>
+        <p style="font-size:12px;color:var(--warn);line-height:1.6;margin:0;">
+          &#9888; <b>ML Limitation Warning:</b> Machine learning classifications are probabilistic approximations and may occasionally yield false positives or false negatives. They should always be verified against deterministic automata.
+        </p>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB 6: URL/API SCANNER -->
+  <!-- ============================================================ -->
+  <div class="tab-pane" id="urlTab" role="tabpanel">
+    <div class="section-panel">
+      <h3 class="section-heading">URL &amp; API Parameter Security Scanner</h3>
+      <p class="section-lead">
+        Performs deep static inspection on API endpoints, decomposing Scheme, Hostname, Path segments, and Query Parameters without sending outbound network requests.
+      </p>
+
+      <!-- URL Chips -->
+      <div class="chip-bar">
+        <span class="chip-label">Quick URLs:</span>
+        <button class="chip chip-safe" onclick="loadUrlSample('https://api.example.com/v1/products?id=7&category=books&page=1')">Safe Product API</button>
+        <button class="chip chip-mal" onclick="loadUrlSample('https://api.example.com/search?q=%27%20UNION%20SELECT%20username%2Cpassword%20FROM%20users%20--')">Encoded SQLi Parameter</button>
+        <button class="chip chip-mal" onclick="loadUrlSample('https://api.example.com/download?file=../../../../etc/passwd')">Path Traversal URL</button>
+        <button class="chip chip-safe" onclick="loadUrlSample('://invalid-malformed-url-example')">Malformed URL Test</button>
+      </div>
+
+      <div class="input-shell" style="padding:14px;margin-bottom:14px;">
+        <label style="font-family:var(--mono);font-size:11px;color:var(--text-faint);display:block;margin-bottom:6px;">ENTER TARGET API URL:</label>
+        <textarea id="urlScannerInput" style="height:64px;" placeholder="https://api.example.com/search?id=10&query=' OR 1=1 --"></textarea>
+        <div class="input-footer" style="padding:8px 0 0;">
+          <span style="font-size:10px;color:var(--safe);">&#128274; 100% Local Static Inspection (No Outbound Traffic)</span>
+          <button class="btn btn-primary" id="btnScanUrl" onclick="executeUrlScan()">Scan URL</button>
+        </div>
+      </div>
+
+      <!-- URL Result Box -->
+      <div class="result-box" id="urlResultBox">
+        <div class="result-banner" id="urlBanner">
+          <div class="result-verdict-title">
+            <span class="verdict-badge" id="urlVerdictBadge">-</span>
+            <span class="status-pill-badge" id="urlRiskPill">NONE</span>
+          </div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);" id="urlFindingType">-</div>
+        </div>
+
+        <div class="result-body">
+          <div class="verdict-summary-card">
+            <p class="verdict-summary-text" id="urlExplanation">-</p>
+          </div>
+
+          <div class="breakdown-title" style="margin-top:14px;">Decomposed URL Architecture</div>
+          <div class="url-grid" id="urlDecomposedGrid"></div>
+
+          <div style="margin-top:16px;" id="urlParamBreakdown"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- TAB 7: DETECTION HISTORY -->
+  <!-- ============================================================ -->
+  <div class="tab-pane" id="historyTab" role="tabpanel">
+    <div class="section-panel">
+      <h3 class="section-heading">Detection History &amp; Audit Trail</h3>
+      <p class="section-lead">
+        Privacy-conscious audit log of recent scans stored locally in the browser and synchronized with the backend circular buffer.
+      </p>
+
+      <div class="history-bar">
+        <div class="filter-group">
+          <button class="filter-btn active" id="filterAll" onclick="setHistoryFilter('all')">All</button>
+          <button class="filter-btn" id="filterMal" onclick="setHistoryFilter('malicious')">Malicious Only</button>
+          <button class="filter-btn" id="filterSafe" onclick="setHistoryFilter('safe')">Safe Only</button>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="fetchHistory()">Refresh</button>
+          <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">Clear History</button>
+        </div>
+      </div>
+
+      <table class="trace-table" id="historyMainTable">
         <thead>
           <tr>
-            <th>Time</th>
-            <th>Type</th>
-            <th>Preview</th>
-            <th>Verdict</th>
-            <th>Risk</th>
-            <th>Stages (R/D/C/M)</th>
+            <th style="width:90px;">Time</th>
+            <th style="width:90px;">Input Type</th>
+            <th>Input Preview</th>
+            <th style="width:110px;">Verdict</th>
+            <th style="width:90px;">Stages</th>
+            <th>Summary</th>
+            <th style="width:60px;text-align:center;">Action</th>
           </tr>
         </thead>
-        <tbody id="historyTableBody">
-          <tr><td colspan="6" style="text-align:center;color:var(--text-faint);">Loading recent scan history...</td></tr>
+        <tbody id="historyMainTableBody">
+          <tr><td colspan="7" style="text-align:center;color:var(--text-faint);">Loading scan history...</td></tr>
         </tbody>
       </table>
+
     </div>
   </div>
 
@@ -1056,10 +1390,11 @@ select.custom-select{
   // =========================================================
   // APPLICATION STATE
   // =========================================================
-  let currentMode = 'text'; // 'text' | 'url'
   let dfaCatalog = [];
   let regexCatalog = [];
-  let waveMode = 'idle'; // 'idle' | 'scanning' | 'safe' | 'danger' | 'error'
+  let waveMode = 'idle';
+  let historyCache = [];
+  let currentHistoryFilter = 'all';
 
   const mainInput = document.getElementById('mainInput');
   const charCount = document.getElementById('charCount');
@@ -1069,11 +1404,32 @@ select.custom-select{
   const resultBanner = document.getElementById('resultBanner');
   const verdictBadge = document.getElementById('verdictBadge');
   const riskPill = document.getElementById('riskPill');
+  const inputTypePill = document.getElementById('inputTypePill');
   const findingType = document.getElementById('findingType');
   const resultExplanation = document.getElementById('resultExplanation');
+  const riskIndicatorsBox = document.getElementById('riskIndicatorsBox');
+  const riskIndicatorsList = document.getElementById('riskIndicatorsList');
+  const ruleByRuleBody = document.getElementById('ruleByRuleBody');
+  const breakdownFlagged = document.getElementById('breakdownFlagged');
+  const breakdownUnflagged = document.getElementById('breakdownUnflagged');
+  const breakdownPolicy = document.getElementById('breakdownPolicy');
+  const breakdownCause = document.getElementById('breakdownCause');
 
+  // Input length counter
   mainInput.addEventListener('input', () => {
     charCount.textContent = mainInput.value.length + ' characters';
+  });
+
+  // Keyboard accessibility: Ctrl+Enter executes scan
+  window.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      const activeTab = document.querySelector('.tab-pane.active');
+      if (activeTab && activeTab.id === 'urlTab') {
+        executeUrlScan();
+      } else {
+        executeScan();
+      }
+    }
   });
 
   // =========================================================
@@ -1082,28 +1438,33 @@ select.custom-select{
   function switchTab(tabId, btn) {
     document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    btn.classList.add('active');
+    
+    const targetPane = document.getElementById(tabId);
+    if (targetPane) targetPane.classList.add('active');
+    if (btn) btn.classList.add('active');
 
     if (tabId === 'historyTab') {
       fetchHistory();
+    } else if (tabId === 'mlTab') {
+      loadMlMetrics();
     }
   }
 
-  function setScanMode(mode) {
-    currentMode = mode;
-    document.getElementById('btnModeText').classList.toggle('active', mode === 'text');
-    document.getElementById('btnModeUrl').classList.toggle('active', mode === 'url');
-    mainInput.placeholder = (mode === 'text')
-      ? 'Enter input text, SQL query, script payload, or numbers to inspect...'
-      : 'Enter API URL (e.g., https://example.com/api?id=10&query=\' OR 1=1)...';
+  function toggleAccordion(elemId) {
+    const el = document.getElementById(elemId);
+    if (el) el.classList.toggle('open');
   }
 
-  function loadSample(sampleText, mode) {
-    setScanMode(mode);
+  function loadSample(sampleText) {
     mainInput.value = sampleText;
     charCount.textContent = sampleText.length + ' characters';
     executeScan();
+  }
+
+  function loadUrlSample(sampleUrl) {
+    const urlInput = document.getElementById('urlScannerInput');
+    urlInput.value = sampleUrl;
+    executeUrlScan();
   }
 
   function clearInput() {
@@ -1114,28 +1475,27 @@ select.custom-select{
   }
 
   // =========================================================
-  // DEFENSIVE VERDICT EXTRACTOR (PREVENTS [object Object])
+  // DEFENSIVE ESCAPING (PREVENTS [object Object])
   // =========================================================
-  function extractVerdictString(res) {
-    if (!res) return 'Unknown';
-    if (typeof res === 'string') return res;
-    if (typeof res.result === 'string') return res.result;
-    if (typeof res.result === 'object' && res.result !== null) {
-      if (typeof res.result.result === 'string') return res.result.result;
+  function safeString(val) {
+    if (val === null || val === undefined) return '';
+    if (typeof val === 'string') return val;
+    if (typeof val === 'number' || typeof val === 'boolean') return String(val);
+    if (typeof val === 'object') {
+      if (val.result && typeof val.result === 'string') return val.result;
+      if (val.explanation && typeof val.explanation === 'string') return val.explanation;
+      try { return JSON.stringify(val); } catch (e) { return String(val); }
     }
-    if (typeof res.verdict === 'string') return res.verdict;
-    return 'Unknown';
+    return String(val);
   }
 
-  function extractStages(res) {
-    if (!res) return { regex: false, dfa: false, cfg: false, ml: false };
-    if (res.stages) return res.stages;
-    if (res.result && res.result.stages) return res.result.stages;
-    return { regex: false, dfa: false, cfg: false, ml: false };
+  function escapeHtml(str) {
+    const s = safeString(str);
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // =========================================================
-  // SCAN EXECUTION
+  // DETECTION CONSOLE SCAN EXECUTION
   // =========================================================
   async function executeScan() {
     const text = mainInput.value.trim();
@@ -1149,13 +1509,10 @@ select.custom-select{
     setWaveMode('scanning', 'ANALYZING SIGNAL PATTERNS...');
 
     try {
-      let endpoint = (currentMode === 'url') ? '/scan-url' : '/predict';
-      let payload = (currentMode === 'url') ? { url: text } : { text: text };
-
-      const response = await fetch(endpoint, {
+      const response = await fetch('/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ text: text })
       });
 
       if (!response.ok) {
@@ -1163,7 +1520,15 @@ select.custom-select{
       }
 
       const data = await response.json();
-      displayResult(data);
+      displayResult(data.result || data);
+      saveToLocalHistory({
+        timestamp: new Date().toLocaleTimeString(),
+        type: (data.result && data.result.input_type) || 'Text',
+        preview: text.length > 60 ? text.substring(0, 60) + '...' : text,
+        result: (data.result && data.result.result) || 'Safe',
+        stages: (data.result && data.result.stages) || {},
+        explanation: (data.result && data.result.explanation) || ''
+      });
 
     } catch (err) {
       console.error('Scan error:', err);
@@ -1174,72 +1539,101 @@ select.custom-select{
     }
   }
 
-  function displayResult(data) {
+  function displayResult(result) {
     resultPanel.classList.add('show');
-    const verdict = extractVerdictString(data);
-    const stages = extractStages(data);
-    const isMalicious = (verdict.toLowerCase().indexOf('malicious') !== -1);
-    const risk = data.risk_level || (data.result && data.result.risk_level) || (isMalicious ? 'High' : 'None');
-    const finding = data.finding_type || (data.result && data.result.finding_type) || (isMalicious ? 'Threat Detected' : 'None');
-    const explanation = data.explanation || (data.result && data.result.explanation) || 'Scan evaluation complete.';
+    const isMalicious = (safeString(result.result).toLowerCase().indexOf('malicious') !== -1);
+    const risk = safeString(result.risk_level || (isMalicious ? 'High' : 'None'));
+    const inputType = safeString(result.input_type || 'Plain Text');
+    const explanation = safeString(result.explanation || 'No malicious pattern was detected by the configured detection methods.');
+    const indicators = result.risk_indicators || [];
+    const breakdown = result.decision_breakdown || {};
+    const stages = result.stages || { regex: false, dfa: false, cfg: false, ml: false };
 
-    // Tone & Verdict
+    // Banner & Verdict
     resultBanner.className = 'result-banner ' + (isMalicious ? 'tone-danger' : 'tone-safe');
-    verdictBadge.textContent = isMalicious ? 'MALICIOUS THREAT DETECTED' : 'CLEAR // INPUT IS SAFE';
+    verdictBadge.textContent = isMalicious ? 'MALICIOUS' : 'SAFE';
+    
     riskPill.textContent = 'RISK: ' + risk.toUpperCase();
-    riskPill.className = 'risk-pill ' + (risk.toLowerCase() === 'high' ? 'risk-high' : (risk.toLowerCase() === 'medium' ? 'risk-medium' : 'risk-none'));
-    findingType.textContent = 'Finding: ' + finding;
+    riskPill.className = 'status-pill-badge ' + (risk.toLowerCase() === 'high' ? 'risk-high' : (risk.toLowerCase() === 'medium' ? 'risk-medium' : 'risk-none'));
+    
+    inputTypePill.textContent = 'TYPE: ' + inputType;
+    findingType.textContent = safeString(result.finding_type || (isMalicious ? 'Threat Detected' : 'Clean Input'));
+
+    // Plain English Explanation
     resultExplanation.innerHTML = escapeHtml(explanation);
 
-    // Waveform
-    setWaveMode(isMalicious ? 'danger' : 'safe', isMalicious ? 'ALERT // THREAT SIGNATURE DETECTED' : 'SECURE // HARMONIC SIGNAL');
+    // Risk Indicators
+    if (indicators && indicators.length > 0) {
+      riskIndicatorsBox.style.display = 'block';
+      riskIndicatorsList.innerHTML = indicators.map(ind => `<li>${escapeHtml(ind)}</li>`).join('');
+    } else {
+      riskIndicatorsBox.style.display = 'none';
+      riskIndicatorsList.innerHTML = '';
+    }
 
-    // Stage cards
+    // B. Rule-by-rule analysis table
+    const ruleByRule = result.rule_by_rule_analysis || [];
+    if (ruleByRule.length > 0) {
+      ruleByRuleBody.innerHTML = ruleByRule.map(row => {
+        const isTrig = (row.status === 'Triggered' || row.status === 'Malicious');
+        const statusClass = isTrig ? 'triggered' : (row.status === 'Not Applicable' ? 'na' : 'passed');
+        return `
+          <tr>
+            <td>
+              <div class="concept-tag">${escapeHtml(row.concept)}</div>
+              <small style="color:var(--text-faint);font-size:11px;">${escapeHtml(row.checks)}</small>
+            </td>
+            <td>
+              <span class="status-tag ${statusClass}">${escapeHtml(row.status)}</span>
+            </td>
+            <td>
+              <div style="font-weight:600;color:var(--text);margin-bottom:4px;">${escapeHtml(row.observed)}</div>
+              <div style="color:var(--text-dim);font-size:11px;">${escapeHtml(row.contribution)}</div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      ruleByRuleBody.innerHTML = '<tr><td colspan="3" style="text-align:center;color:var(--text-faint);">Telemetry unavailable.</td></tr>';
+    }
+
+    // C. Decision Breakdown
+    const flagged = breakdown.flagged_stages || [];
+    const unflagged = breakdown.unflagged_stages || [];
+    breakdownFlagged.textContent = flagged.length > 0 ? flagged.join(', ') : 'None';
+    breakdownFlagged.style.color = flagged.length > 0 ? 'var(--danger)' : 'var(--text-dim)';
+
+    breakdownUnflagged.textContent = unflagged.length > 0 ? unflagged.join(', ') : 'None';
+    breakdownPolicy.textContent = safeString(breakdown.combination_rule || 'Logical OR on deterministic stages; ML evaluated as secondary verification.');
+    breakdownCause.textContent = safeString(breakdown.primary_cause || '-');
+
+    // 4-Stage summary cards
     updateStageCard('stage1Status', stages.regex);
     updateStageCard('stage2Status', stages.dfa);
     updateStageCard('stage3Status', stages.cfg);
     updateStageCard('stage4Status', stages.ml);
 
-    // URL components if available
-    const urlInspector = document.getElementById('urlInspector');
-    if (data.components && data.components.hostname) {
-      urlInspector.style.display = 'block';
-      const c = data.components;
-      let gridHtml = `
-        <div class="url-grid-k">Scheme:</div><div class="url-grid-v">${escapeHtml(c.scheme || 'http')}</div>
-        <div class="url-grid-k">Hostname:</div><div class="url-grid-v">${escapeHtml(c.hostname)}</div>
-        <div class="url-grid-k">Path:</div><div class="url-grid-v">${escapeHtml(c.path)}</div>
-        <div class="url-grid-k">Query Params:</div><div class="url-grid-v">${escapeHtml(JSON.stringify(c.query_parameters || {}))}</div>
-      `;
-      if (data.suspicious_parameters && data.suspicious_parameters.length > 0) {
-        gridHtml += `<div class="url-grid-k" style="color:var(--danger)">Suspicious:</div><div class="url-grid-v" style="color:var(--danger)">${escapeHtml(data.suspicious_parameters.join(', '))}</div>`;
-      }
-      document.getElementById('urlGridContent').innerHTML = gridHtml;
-    } else {
-      urlInspector.style.display = 'none';
-    }
+    // Waveform
+    setWaveMode(isMalicious ? 'danger' : 'safe', isMalicious ? 'ALERT // THREAT SIGNATURE DETECTED' : 'SECURE // HARMONIC SIGNAL');
   }
 
   function displayError(msg) {
     resultPanel.classList.add('show');
     resultBanner.className = 'result-banner tone-error';
-    verdictBadge.textContent = 'CONNECTION ERROR';
+    verdictBadge.textContent = 'COMMUNICATION ERROR';
     riskPill.textContent = 'ERROR';
-    riskPill.className = 'risk-pill risk-medium';
-    findingType.textContent = 'System Error';
-    resultExplanation.innerHTML = `Could not communicate with the detector backend.<br><small style="color:var(--text-faint);">${escapeHtml(msg)}</small><br><br>Make sure FastAPI backend is running at <code>http://127.0.0.1:8000</code>.`;
-    setWaveMode('error', 'ERROR // BACKEND OFFLINE');
+    riskPill.className = 'status-pill-badge risk-medium';
+    inputTypePill.textContent = 'TYPE: ERROR';
+    findingType.textContent = 'System Fault';
+    resultExplanation.innerHTML = `Could not reach detection engine.<br><small style="color:var(--text-faint);">${escapeHtml(msg)}</small><br><br>Ensure the backend is online at <code>http://127.0.0.1:8000</code>.`;
+    setWaveMode('error', 'ERROR // BACKEND DISCONNECTED');
   }
 
   function updateStageCard(elemId, detected) {
     const el = document.getElementById(elemId);
-    el.textContent = detected ? 'DETECTED' : 'CLEAR';
+    if (!el) return;
+    el.textContent = detected ? 'TRIGGERED' : 'CLEAR';
     el.className = 'stage-status ' + (detected ? 'detected' : 'clear');
-  }
-
-  function escapeHtml(str) {
-    if (typeof str !== 'string') return String(str);
-    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
   // =========================================================
@@ -1247,12 +1641,11 @@ select.custom-select{
   // =========================================================
   const canvas = document.getElementById('waveCanvas');
   const ctx = canvas.getContext('2d');
-  let animationId = null;
   let wavePhase = 0;
 
   function resizeCanvas() {
-    canvas.width = canvas.parentElement.clientWidth - 40;
-    canvas.height = 76;
+    canvas.width = canvas.parentElement.clientWidth - 36;
+    canvas.height = 72;
   }
   window.addEventListener('resize', resizeCanvas);
   resizeCanvas();
@@ -1271,7 +1664,6 @@ select.custom-select{
 
     wavePhase += 0.05;
 
-    // Grid center line
     ctx.strokeStyle = 'rgba(35,47,69,0.3)';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -1291,9 +1683,8 @@ select.custom-select{
     } else if (waveMode === 'danger') {
       ctx.strokeStyle = '#ff4d6d';
       for (let x = 0; x < w; x++) {
-        // Jagged aggressive spikes
-        const noise = (x % 14 === 0) ? (Math.random() * 24 - 12) : 0;
-        const y = mid + Math.sin(x * 0.06 + wavePhase * 2) * 22 + noise;
+        const noise = (x % 14 === 0) ? (Math.random() * 22 - 11) : 0;
+        const y = mid + Math.sin(x * 0.06 + wavePhase * 2) * 20 + noise;
         if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
     } else if (waveMode === 'scanning') {
@@ -1309,7 +1700,6 @@ select.custom-select{
         if (x === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
     } else {
-      // Idle pulse
       ctx.strokeStyle = 'rgba(79,168,255,0.4)';
       for (let x = 0; x < w; x++) {
         const y = mid + Math.sin(x * 0.02 + wavePhase * 0.5) * 6;
@@ -1317,12 +1707,12 @@ select.custom-select{
       }
     }
     ctx.stroke();
-    animationId = requestAnimationFrame(drawWave);
+    requestAnimationFrame(drawWave);
   }
   drawWave();
 
   // =========================================================
-  // SYLLABUS UNIT III: DFA VISUALIZER
+  // TAB 2: DFA VISUALIZER
   // =========================================================
   async function loadDfaCatalog() {
     try {
@@ -1354,10 +1744,10 @@ select.custom-select{
 &bull; <b>Input Alphabet Σ:</b> ${escapeHtml(dfa.alphabet)}
 &bull; <b>Initial State q0:</b> ${dfa.start_state}
 &bull; <b>Accept States F:</b> { ${dfa.accept_states.join(', ')} }
-&bull; <b>Description:</b> ${escapeHtml(dfa.description)}
+&bull; <b>Category:</b> ${escapeHtml(dfa.category)}
+&bull; <b>Language Description:</b> ${escapeHtml(dfa.description)}
     `;
 
-    // Render nodes flow
     const flowContainer = document.getElementById('dfaNodesFlow');
     flowContainer.innerHTML = '';
     dfa.states.forEach((st, idx) => {
@@ -1399,7 +1789,6 @@ select.custom-select{
     const tbody = document.getElementById('dfaTraceBody');
     tbody.innerHTML = '';
 
-    // Clear active classes
     document.querySelectorAll('.dfa-node').forEach(n => n.classList.remove('is-active'));
 
     const steps = traceData.trace_summary || [];
@@ -1418,18 +1807,17 @@ select.custom-select{
         <td><b>${charDisplay}</b></td>
         <td>${transDisplay}</td>
         <td><b>${s.to_state}</b></td>
-        <td>${s.is_accepting ? 'YES (ACCEPTED)' : 'NO'}</td>
+        <td>${s.is_accepting ? '<span style="color:var(--danger);font-weight:700;">YES (ACCEPTING)</span>' : '<span style="color:var(--text-faint)">NO</span>'}</td>
       `;
       tbody.appendChild(tr);
     });
 
-    // Highlight final state node
     const finalNode = document.getElementById('node-' + traceData.final_state);
     if (finalNode) finalNode.classList.add('is-active');
   }
 
   // =========================================================
-  // SYLLABUS UNIT IV: REGEX PLAYGROUND
+  // TAB 3: REGEX PLAYGROUND
   // =========================================================
   async function loadRegexRules() {
     try {
@@ -1450,13 +1838,18 @@ select.custom-select{
       el.className = 'rule-card-item';
       el.onclick = () => {
         document.getElementById('regexPatternInput').value = rule.pattern;
-        document.getElementById('regexTextInput').value = rule.example;
+        document.getElementById('regexTextInput').value = rule.suspicious_example || rule.example || '';
         testCustomRegex();
       };
       el.innerHTML = `
-        <div style="font-family:var(--mono);font-size:10px;color:var(--scan);font-weight:700;">${escapeHtml(rule.category)}</div>
-        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);margin:3px 0;">${escapeHtml(rule.name)}</div>
-        <div style="font-size:11px;color:var(--text-faint);">${escapeHtml(rule.description)}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+          <span style="font-family:var(--mono);font-size:10px;color:var(--scan);font-weight:700;">${escapeHtml(rule.category)}</span>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint);">${escapeHtml(rule.id || '')}</span>
+        </div>
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px;">${escapeHtml(rule.name)}</div>
+        <div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;">${escapeHtml(rule.description)}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--safe);margin-bottom:2px;">Safe Ex: <code>${escapeHtml(rule.safe_example || '')}</code></div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--danger);">Attack Ex: <code>${escapeHtml(rule.suspicious_example || rule.example || '')}</code></div>
       `;
       container.appendChild(el);
     });
@@ -1475,12 +1868,12 @@ select.custom-select{
       const data = await res.json();
       const outBox = document.getElementById('regexResultBox');
       if (!data.valid_syntax) {
-        outBox.innerHTML = `<span style="color:var(--danger)">Invalid Regex Syntax: ${escapeHtml(data.error)}</span>`;
+        outBox.innerHTML = `<span style="color:var(--danger);font-weight:700;">Invalid Regex Syntax:</span> ${escapeHtml(data.error)}`;
       } else if (data.matched) {
-        const matchesHtml = data.matches.map(m => `&bull; Matched substring: <b>${escapeHtml(m.matched_text)}</b> (index ${m.start} to ${m.end})`).join('<br>');
-        outBox.innerHTML = `<span style="color:var(--safe);font-weight:700;">REGEX MATCH SUCCEEDED (${data.match_count} match):</span><br>${matchesHtml}`;
+        const matchesHtml = data.matches.map(m => `&bull; Matched Text: <code>${escapeHtml(m.matched_text)}</code> (Span: ${m.start} to ${m.end})`).join('<br>');
+        outBox.innerHTML = `<span style="color:var(--danger);font-weight:700;">REGEX MATCH TRIGGERED (${data.match_count} match):</span><br>${matchesHtml}<br><br><small style="color:var(--text-dim)">This pattern detected target injection syntax within the input.</small>`;
       } else {
-        outBox.innerHTML = `<span style="color:var(--text-dim);">No match found in input string.</span>`;
+        outBox.innerHTML = `<span style="color:var(--safe);font-weight:700;">NO MATCH:</span> <span style="color:var(--text-dim);">No configured rule matched this pattern. (Note: Passing pre-compiled regex signatures means no known pattern was found, but does not prove the input is completely immune to novel attacks.)</span>`;
       }
     } catch (e) {
       alert('Error testing regex: ' + e.message);
@@ -1488,16 +1881,16 @@ select.custom-select{
   }
 
   // =========================================================
-  // SYLLABUS UNIT V: CFG EXPLORER
+  // TAB 4: GRAMMAR ANALYZER
   // =========================================================
   async function loadCfgGrammar() {
     try {
       const res = await fetch('/syllabus/cfg');
       const data = await res.json();
-      let html = `<b>${escapeHtml(data.title)}</b><br>`;
-      html += `&bull; <b>Start Symbol:</b> ${data.start_symbol}<br>`;
-      html += `&bull; <b>Variables V:</b> { ${data.variables.join(', ')} }<br>`;
-      html += `&bull; <b>Terminals Σ:</b> { ${data.terminals.join(', ')} }<br><br>`;
+      let html = `<b>Formal Context-Free Grammar G = (V, Σ, R, S)</b><br>`;
+      html += `&bull; <b>Start Symbol S:</b> ${data.start_symbol}<br>`;
+      html += `&bull; <b>Non-Terminal Variables V:</b> { ${data.variables.join(', ')} }<br>`;
+      html += `&bull; <b>Terminal Alphabet Σ:</b> { ${data.terminals.join(', ')} }<br><br>`;
       html += `<b>Production Rules R:</b><br>`;
       data.productions.forEach(p => {
         html += `  ${p.lhs} &rarr; ${escapeHtml(p.rhs.join(' | '))}<br>`;
@@ -1517,7 +1910,7 @@ select.custom-select{
         body: JSON.stringify({ text: text })
       });
       const data = await res.json();
-      let outHtml = `<b>Input:</b> ${escapeHtml(text)}<br>`;
+      let outHtml = `<b>Target Expression:</b> ${escapeHtml(text)}<br>`;
       outHtml += `<b>Tokenized Stream:</b> [ ${data.tokens.map(t => '<code>' + escapeHtml(t) + '</code>').join(', ')} ]<br><br>`;
       outHtml += `<b>Derivation Steps:</b><br>`;
       if (data.derivations && data.derivations.length > 0) {
@@ -1525,9 +1918,10 @@ select.custom-select{
           outHtml += `  &rArr; ${escapeHtml(d)}<br>`;
         });
       } else {
-        outHtml += `  (No derivation matched)<br>`;
+        outHtml += `  (No derivation matched target grammar)<br>`;
       }
-      outHtml += `<br><b>Status:</b> ${data.is_malicious ? '<span style="color:var(--danger)">MALICIOUS SQL STRUCTURE DERIVED</span>' : '<span style="color:var(--safe)">BENIGN (No unauthorized SQL clauses derived)</span>'}`;
+      outHtml += `<br><b>Grammar Status:</b> ${data.is_malicious ? '<span style="color:var(--danger);font-weight:700;">MALICIOUS SQL STRUCTURE DERIVED</span>' : '<span style="color:var(--safe);font-weight:700;">BENIGN (No unauthorized SQL clauses derived)</span>'}`;
+      outHtml += `<br><small style="color:var(--text-faint)">${escapeHtml(data.limitations || '')}</small>`;
       document.getElementById('cfgParseOutput').innerHTML = outHtml;
     } catch (e) {
       alert('Error parsing CFG: ' + e.message);
@@ -1535,37 +1929,267 @@ select.custom-select{
   }
 
   // =========================================================
-  // SCAN HISTORY
+  // TAB 5: ML ANALYSIS
   // =========================================================
-  async function fetchHistory() {
+  async function loadMlMetrics() {
     try {
-      const res = await fetch('/history');
+      const res = await fetch('/ml/metrics');
+      if (!res.ok) return;
       const data = await res.json();
-      const tbody = document.getElementById('historyTableBody');
-      tbody.innerHTML = '';
-      const list = data.history || [];
-      if (list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-faint);">No recent scans in buffer.</td></tr>';
-        return;
+      if (data.selected_metrics) {
+        const m = data.selected_metrics;
+        document.getElementById('mlMetricAccuracy').textContent = (m.accuracy * 100).toFixed(2) + '%';
+        document.getElementById('mlMetricF1').textContent = m.f1_class_1.toFixed(4);
+        document.getElementById('mlMetricPrecision').textContent = (m.precision_class_1 * 100).toFixed(2) + '%';
+        document.getElementById('mlMetricFPR').textContent = (m.false_positive_rate * 100).toFixed(2) + '%';
+        
+        if (m.confusion_matrix) {
+          document.getElementById('cmTN').textContent = m.confusion_matrix.tn.toLocaleString() + ' (Benign inputs correctly labeled Safe)';
+          document.getElementById('cmFP').textContent = m.confusion_matrix.fp.toLocaleString() + ' (Benign inputs falsely flagged - 0.30%)';
+          document.getElementById('cmFN').textContent = m.confusion_matrix.fn.toLocaleString() + ' (Attacks missed by ML alone)';
+          document.getElementById('cmTP').textContent = m.confusion_matrix.tp.toLocaleString() + ' (Attacks correctly detected)';
+        }
       }
-      list.forEach(item => {
-        const tr = document.createElement('tr');
-        const isMal = (item.result === 'Malicious');
-        const st = item.stages || {};
-        const stageStr = `${st.regex?'R':'-'}/${st.dfa?'D':'-'}/${st.cfg?'C':'-'}/${st.ml?'M':'-'}`;
-        tr.innerHTML = `
-          <td>${item.timestamp}</td>
-          <td>${escapeHtml(item.type)}</td>
-          <td><code>${escapeHtml(item.preview)}</code></td>
-          <td style="color:${isMal?'var(--danger)':'var(--safe)'};font-weight:700;">${item.result}</td>
-          <td>${item.risk_level || 'None'}</td>
-          <td><code>${stageStr}</code></td>
-        `;
-        tbody.appendChild(tr);
+    } catch (e) {
+      console.warn('Could not load ML metrics:', e);
+    }
+  }
+
+  async function testStandaloneMl() {
+    const text = document.getElementById('mlStandaloneInput').value.trim();
+    const outBox = document.getElementById('mlStandaloneOutput');
+    outBox.innerHTML = 'Evaluating ML model...';
+
+    try {
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text })
+      });
+      const data = await res.json();
+      const ml = (data.result && data.result.stage_details && data.result.stage_details.ml) || {};
+      const prob = ml.malicious_probability !== undefined ? (ml.malicious_probability * 100).toFixed(2) + '%' : 'N/A';
+      const isMal = ml.is_malicious;
+
+      outBox.innerHTML = `
+<b>Model Architecture:</b> ${escapeHtml(ml.model_type || 'LogisticRegression')} + TF-IDF Vectorizer<br>
+<b>Raw Prediction:</b> <span style="color:${isMal ? 'var(--danger)' : 'var(--safe)'};font-weight:700;">${isMal ? 'MALICIOUS' : 'NORMAL / SAFE'}</span><br>
+<b>Calibrated Malicious Probability P(Malicious):</b> ${prob}<br>
+<b>Confidence Score:</b> ${(ml.confidence * 100).toFixed(2)}%<br><br>
+<small style="color:var(--text-faint);">Evaluated on vocabulary n-grams without deterministic rule override.</small>
+      `;
+    } catch (e) {
+      outBox.innerHTML = `<span style="color:var(--danger)">Error: ${escapeHtml(e.message)}</span>`;
+    }
+  }
+
+  // =========================================================
+  // TAB 6: URL/API SCANNER
+  // =========================================================
+  async function executeUrlScan() {
+    const url = document.getElementById('urlScannerInput').value.trim();
+    if (!url) return;
+
+    const btn = document.getElementById('btnScanUrl');
+    btn.disabled = true;
+    btn.textContent = 'Scanning URL...';
+
+    try {
+      const res = await fetch('/scan-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url })
+      });
+      const data = await res.json();
+      renderUrlResult(data);
+      saveToLocalHistory({
+        timestamp: new Date().toLocaleTimeString(),
+        type: 'URL',
+        preview: url.length > 60 ? url.substring(0, 60) + '...' : url,
+        result: data.result || 'Safe',
+        stages: data.stages || {},
+        explanation: data.explanation || ''
       });
     } catch (e) {
-      console.warn('Could not fetch history:', e);
+      alert('Error scanning URL: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Scan URL';
     }
+  }
+
+  function renderUrlResult(data) {
+    const box = document.getElementById('urlResultBox');
+    box.classList.add('show');
+
+    const isMal = (safeString(data.result).toLowerCase().indexOf('malicious') !== -1);
+    const isMalformed = (data.is_valid === false || safeString(data.result).toLowerCase().indexOf('malformed') !== -1);
+    const banner = document.getElementById('urlBanner');
+
+    if (isMalformed) {
+      banner.className = 'result-banner tone-error';
+      document.getElementById('urlVerdictBadge').textContent = 'MALFORMED URL';
+      document.getElementById('urlRiskPill').className = 'status-pill-badge risk-medium';
+      document.getElementById('urlRiskPill').textContent = 'PARSER ERROR';
+    } else {
+      banner.className = 'result-banner ' + (isMal ? 'tone-danger' : 'tone-safe');
+      document.getElementById('urlVerdictBadge').textContent = isMal ? 'MALICIOUS URL DETECTED' : 'SAFE URL';
+      document.getElementById('urlRiskPill').className = 'status-pill-badge ' + (isMal ? 'risk-high' : 'risk-none');
+      document.getElementById('urlRiskPill').textContent = 'RISK: ' + safeString(data.risk_level || 'NONE').toUpperCase();
+    }
+
+    document.getElementById('urlFindingType').textContent = isMalformed ? 'Syntax Validation Error' : (isMal ? 'Threat Detected' : 'Clean Request');
+    document.getElementById('urlExplanation').innerHTML = escapeHtml(data.explanation || 'URL evaluation complete.');
+
+    // Components Grid
+    const c = data.components || {};
+    document.getElementById('urlDecomposedGrid').innerHTML = `
+      <div class="url-grid-k">Scheme:</div><div class="url-grid-v">${escapeHtml(c.scheme || 'http')}</div>
+      <div class="url-grid-k">Hostname:</div><div class="url-grid-v">${escapeHtml(c.hostname || 'None')}</div>
+      <div class="url-grid-k">Port:</div><div class="url-grid-v">${escapeHtml(c.port || 'Default')}</div>
+      <div class="url-grid-k">Path:</div><div class="url-grid-v">${escapeHtml(c.path || '/')}</div>
+      <div class="url-grid-k">Query Params:</div><div class="url-grid-v">${escapeHtml(JSON.stringify(c.query_parameters || {}))}</div>
+      <div class="url-grid-k">Fragment:</div><div class="url-grid-v">${escapeHtml(c.fragment || 'None')}</div>
+    `;
+
+    // Parameter Breakdown Cards
+    const paramAnalysis = data.parameter_analysis || {};
+    const suspParams = data.suspicious_parameters || [];
+    let pCardsHtml = '<div class="breakdown-title">Query Parameter Diagnostics</div>';
+
+    const pKeys = Object.keys(paramAnalysis);
+    if (pKeys.length === 0) {
+      pCardsHtml += '<div style="color:var(--text-faint);font-size:12px;">No query parameters present in this URL.</div>';
+    } else {
+      pKeys.forEach(k => {
+        const findings = paramAnalysis[k] || [];
+        const isSusp = suspParams.includes(k) || suspParams.some(s => s.indexOf(k) !== -1);
+        pCardsHtml += `
+          <div style="background:var(--panel);border:1px solid ${isSusp ? 'var(--danger)' : 'var(--border)'};border-radius:6px;padding:12px;margin-bottom:8px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+              <span style="font-family:var(--mono);font-weight:700;color:${isSusp ? 'var(--danger)' : 'var(--safe)'};">Parameter: ${escapeHtml(k)}</span>
+              <span class="status-tag ${isSusp ? 'triggered' : 'passed'}">${isSusp ? 'MALICIOUS PAYLOAD' : 'SAFE'}</span>
+            </div>
+            ${findings.map(f => {
+              const res = f.result || {};
+              return `<div style="font-size:11px;color:var(--text-dim);margin-top:2px;"><b>Value:</b> <code>${escapeHtml(f.decoded_value || f.raw_value)}</code> &bull; ${escapeHtml(res.explanation || '')}</div>`;
+            }).join('')}
+          </div>
+        `;
+      });
+    }
+    document.getElementById('urlParamBreakdown').innerHTML = pCardsHtml;
+  }
+
+  // =========================================================
+  // TAB 7: DETECTION HISTORY
+  // =========================================================
+  function loadLocalHistory() {
+    try {
+      const stored = localStorage.getItem('signal_scan_history');
+      if (stored) {
+        historyCache = JSON.parse(stored);
+      }
+    } catch (e) {
+      historyCache = [];
+    }
+  }
+
+  function saveToLocalHistory(item) {
+    historyCache.unshift(item);
+    if (historyCache.length > 50) historyCache.pop();
+    try {
+      localStorage.setItem('signal_scan_history', JSON.stringify(historyCache));
+    } catch (e) {}
+  }
+
+  async function fetchHistory() {
+    loadLocalHistory();
+    try {
+      const res = await fetch('/history');
+      if (res.ok) {
+        const data = await res.json();
+        const serverList = data.history || [];
+        // If server list has items, blend them
+        if (serverList.length > 0 && historyCache.length === 0) {
+          historyCache = serverList.map(s => ({
+            timestamp: s.timestamp,
+            type: s.input_type || s.type || 'Text',
+            preview: s.preview,
+            result: s.result,
+            stages: s.stages,
+            explanation: s.explanation || ''
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn('Could not fetch server history:', e);
+    }
+    renderHistoryTable();
+  }
+
+  function setHistoryFilter(filter) {
+    currentHistoryFilter = filter;
+    document.getElementById('filterAll').classList.toggle('active', filter === 'all');
+    document.getElementById('filterMal').classList.toggle('active', filter === 'malicious');
+    document.getElementById('filterSafe').classList.toggle('active', filter === 'safe');
+    renderHistoryTable();
+  }
+
+  function renderHistoryTable() {
+    const tbody = document.getElementById('historyMainTableBody');
+    tbody.innerHTML = '';
+
+    let filtered = historyCache;
+    if (currentHistoryFilter === 'malicious') {
+      filtered = historyCache.filter(h => safeString(h.result).toLowerCase().indexOf('malicious') !== -1);
+    } else if (currentHistoryFilter === 'safe') {
+      filtered = historyCache.filter(h => safeString(h.result).toLowerCase().indexOf('safe') !== -1);
+    }
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--text-faint);padding:24px;">No scans match the current filter.</td></tr>';
+      return;
+    }
+
+    filtered.forEach((item, index) => {
+      const tr = document.createElement('tr');
+      const isMal = (safeString(item.result).toLowerCase().indexOf('malicious') !== -1);
+      const st = item.stages || {};
+      const stageStr = `${st.regex ? 'R' : '-'}/${st.dfa ? 'D' : '-'}/${st.cfg ? 'C' : '-'}/${st.ml ? 'M' : '-'}`;
+
+      tr.innerHTML = `
+        <td>${escapeHtml(item.timestamp)}</td>
+        <td><span class="status-pill-badge type-pill">${escapeHtml(item.type || 'Text')}</span></td>
+        <td><code>${escapeHtml(item.preview)}</code></td>
+        <td style="color:${isMal ? 'var(--danger)' : 'var(--safe)'};font-weight:700;">${escapeHtml(item.result)}</td>
+        <td><code>${stageStr}</code></td>
+        <td style="font-size:11px;color:var(--text-dim);">${escapeHtml(item.explanation || '-')}</td>
+        <td style="text-align:center;">
+          <button class="btn btn-secondary btn-sm" onclick="deleteHistoryItem(${index})" title="Remove item">&times;</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+
+  async function deleteHistoryItem(index) {
+    historyCache.splice(index, 1);
+    try {
+      localStorage.setItem('signal_scan_history', JSON.stringify(historyCache));
+      await fetch('/history/' + index, { method: 'DELETE' });
+    } catch (e) {}
+    renderHistoryTable();
+  }
+
+  async function clearAllHistory() {
+    if (!confirm('Clear all scan history?')) return;
+    historyCache = [];
+    try {
+      localStorage.removeItem('signal_scan_history');
+      await fetch('/history', { method: 'DELETE' });
+    } catch (e) {}
+    renderHistoryTable();
   }
 
   // =========================================================
@@ -1575,6 +2199,7 @@ select.custom-select{
     loadDfaCatalog();
     loadRegexRules();
     loadCfgGrammar();
+    loadLocalHistory();
   });
 </script>
 

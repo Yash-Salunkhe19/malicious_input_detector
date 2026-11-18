@@ -11,6 +11,7 @@ Syllabus:
 
 import time
 import re
+import json
 from collections import deque
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -55,10 +56,11 @@ app.add_middleware(
 )
 
 FRONTEND_FILE = Path(__file__).resolve().parent.parent / "frontend" / "frontend.html"
+MODEL_EVAL_FILE = Path(__file__).resolve().parent / "model_evaluation.json"
 
-# In-memory circular buffer for scan history (max 30 items)
+# In-memory circular buffer for scan history (max 50 items)
 # Privacy-conscious: truncates long text, does not persist to disk
-SCAN_HISTORY = deque(maxlen=30)
+SCAN_HISTORY = deque(maxlen=50)
 
 
 # ============================================================
@@ -171,16 +173,10 @@ def predict(data: InputText):
     """
     input_str = data.text
     if len(input_str.strip()) == 0:
+        empty_res = detect_input("")
         return {
             "input": input_str,
-            "result": {
-                "result": "Safe",
-                "risk_level": "None",
-                "finding_type": "None",
-                "explanation": "Empty input provided.",
-                "stages": {"regex": False, "dfa": False, "cfg": False, "ml": False},
-                "stage_details": {}
-            }
+            "result": empty_res
         }
 
     detection = detect_input(input_str)
@@ -192,7 +188,9 @@ def predict(data: InputText):
         "preview": (input_str[:60] + "...") if len(input_str) > 60 else input_str,
         "result": detection["result"],
         "risk_level": detection["risk_level"],
-        "stages": detection["stages"]
+        "stages": detection["stages"],
+        "input_type": detection.get("input_type", "Text"),
+        "explanation": detection.get("explanation", "")
     })
 
     return {
@@ -215,7 +213,9 @@ def scan_api_url(data: URLInput):
         "preview": (data.url[:60] + "...") if len(data.url) > 60 else data.url,
         "result": result["result"],
         "risk_level": result["risk_level"],
-        "stages": result["stages"]
+        "stages": result["stages"],
+        "input_type": "URL / API Endpoint",
+        "explanation": result.get("explanation", "")
     })
 
     return result
@@ -228,6 +228,34 @@ def get_history():
         "history": list(SCAN_HISTORY),
         "count": len(SCAN_HISTORY)
     }
+
+
+@app.delete("/history", tags=["Detection"])
+def clear_history():
+    """Clear all recent scan history from server memory."""
+    SCAN_HISTORY.clear()
+    return {"status": "cleared", "count": 0}
+
+
+@app.delete("/history/{index}", tags=["Detection"])
+def delete_history_item(index: int):
+    """Delete a single history entry by index from server memory."""
+    if 0 <= index < len(SCAN_HISTORY):
+        del SCAN_HISTORY[index]
+        return {"status": "deleted", "index": index, "remaining": len(SCAN_HISTORY)}
+    raise HTTPException(status_code=404, detail="History index not found")
+
+
+@app.get("/ml/metrics", tags=["Machine Learning"])
+def get_ml_metrics():
+    """Returns trained machine learning evaluation metrics, confusion matrix, and benchmark comparisons."""
+    if MODEL_EVAL_FILE.exists():
+        try:
+            with open(MODEL_EVAL_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            return {"error": f"Could not read evaluation file: {str(e)}"}
+    return {"error": "model_evaluation.json not found on server"}
 
 
 # ============================================================

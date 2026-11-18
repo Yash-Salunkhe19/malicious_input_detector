@@ -230,3 +230,58 @@ def test_malicious_url_path_traversal():
 def test_malformed_url_handled_safely():
     res = scan_url("://invalid-url-without-proper-format")
     assert res["is_valid"] in (True, False) # Does not raise unhandled exception
+
+
+# ============================================================
+# 9. EXPLAINABLE RESULTS & PROMPT SPECIFICATION VERIFICATION
+# ============================================================
+
+def test_explainable_detection_structure_benign():
+    res = detect_input("normal user login request")
+    assert res["result"] == "Safe"
+    assert "No malicious pattern was detected" in res["explanation"]
+    assert res["input_type"] == "Authentication / User Request"
+    assert len(res["risk_indicators"]) == 0
+    assert len(res["rule_by_rule_analysis"]) == 4
+    assert res["decision_breakdown"]["primary_cause"].startswith("All stages cleared")
+    assert "Logical OR" in res["decision_breakdown"]["combination_rule"]
+
+
+def test_explainable_detection_structure_malicious():
+    res = detect_input("' OR 1=1 --")
+    assert res["result"] == "Malicious"
+    assert "SQL injection pattern was detected" in res["explanation"]
+    assert res["input_type"] == "SQL Query / Injection Fragment"
+    assert len(res["risk_indicators"]) > 0
+    assert any(c["status"] == "Triggered" for c in res["rule_by_rule_analysis"])
+    assert "Regex / Rule Matching" in res["decision_breakdown"]["flagged_stages"]
+
+
+def test_ml_metrics_endpoint():
+    res = client.get("/ml/metrics")
+    assert res.status_code == 200
+    data = res.json()
+    assert "selected_metrics" in data
+    assert data["selected_metrics"]["accuracy"] > 0.90
+    assert data["selected_metrics"]["false_positive_rate"] < 0.05
+
+
+def test_history_clear_and_delete_endpoints():
+    # Insert a scan
+    client.post("/predict", json={"text": "test_history_item"})
+    
+    # Check history has items
+    res = client.get("/history")
+    assert res.status_code == 200
+    initial_count = res.json()["count"]
+    assert initial_count > 0
+
+    # Delete index 0
+    res_del = client.delete("/history/0")
+    assert res_del.status_code == 200
+
+    # Clear all history
+    res_clear = client.delete("/history")
+    assert res_clear.status_code == 200
+    assert res_clear.json()["count"] == 0
+
