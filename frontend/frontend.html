@@ -3,2339 +3,2376 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SIGNAL — Hybrid Malicious Input Detection System</title>
 
-<!-- Fonts -->
+<title>Signal // Malicious Input Detector</title>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-:root {
-  /* SIGNAL Theme: Premium Light-Themed Cybersecurity SaaS */
-  --bg-app: #f8fafc;
-  --bg-sidebar: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-subtle: #f1f5f9;
-  --bg-input: #ffffff;
-  --bg-code: #0f172a;
-
-  --border-subtle: #e2e8f0;
-  --border-card: #e2e8f0;
-  --border-focus: #3b82f6;
-
-  /* Accents: Soft Blue, Cyan, Subtle Purple */
-  --accent-primary: #2563eb;
-  --accent-primary-hover: #1d4ed8;
-  --accent-primary-light: #eff6ff;
-  --accent-primary-glow: rgba(37, 99, 235, 0.12);
-
-  --accent-cyan: #0891b2;
-  --accent-cyan-light: #ecfeff;
-  --accent-purple: #7c3aed;
-  --accent-purple-light: #f5f3ff;
-
-  /* Status Colors */
-  --status-safe: #059669;
-  --status-safe-bg: #ecfdf5;
-  --status-safe-border: #a7f3d0;
-
-  --status-danger: #dc2626;
-  --status-danger-bg: #fef2f2;
-  --status-danger-border: #fecaca;
-
-  --status-warn: #d97706;
-  --status-warn-bg: #fffbeb;
-  --status-warn-border: #fde68a;
-
-  --status-info: #0284c7;
-  --status-info-bg: #f0f9ff;
-  --status-info-border: #bae6fd;
-
-  /* Typography */
-  --text-main: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --text-code: #e2e8f0;
-
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
-  --shadow-hover: 0 10px 15px -3px rgba(15, 23, 42, 0.07), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
-  --shadow-pop: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
-}
-
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-body {
-  background-color: var(--bg-app);
-  color: var(--text-main);
-  font-family: var(--font-sans);
-  min-height: 100vh;
-  display: flex;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* LAYOUT: SIDEBAR + MAIN WORKSPACE */
-.app-container {
-  display: flex;
-  width: 100vw;
-  min-height: 100vh;
-}
-
-/* SIDEBAR */
-.sidebar {
-  width: 260px;
-  background-color: var(--bg-sidebar);
-  border-right: 1px solid var(--border-subtle);
-  display: flex;
-  flex-direction: column;
-  flex-shrink: 0;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  z-index: 50;
-  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.02);
-}
-
-.sidebar-header {
-  padding: 20px;
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.brand-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
-  color: #fff;
-  flex-shrink: 0;
-}
-
-.brand-info h2 {
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-  color: var(--text-main);
-  line-height: 1.2;
-}
-
-.brand-info span {
-  font-size: 11px;
-  color: var(--accent-primary);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-.sidebar-nav {
-  padding: 16px 12px;
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.nav-section-title {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 12px 10px 4px;
-}
-
-.nav-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  color: var(--text-secondary);
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s ease;
-  user-select: none;
-}
-
-.nav-item:hover {
-  background-color: var(--bg-card-subtle);
-  color: var(--text-main);
-}
-
-.nav-item.active {
-  background-color: var(--accent-primary-light);
-  color: var(--accent-primary);
-  border-color: #bfdbfe;
-  font-weight: 600;
-}
-
-.nav-icon {
-  width: 18px;
-  height: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.sidebar-footer {
-  padding: 14px 16px;
-  border-top: 1px solid var(--border-subtle);
-  font-size: 11px;
-  color: var(--text-muted);
-  background: #fafafa;
-}
-
-.engine-status-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11.5px;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-.pulse-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--status-safe);
-  box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.4);
-  animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(5, 150, 105, 0); }
-  100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(5, 150, 105, 0); }
-}
 
-/* MAIN CONTENT */
-.main-wrapper {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background-color: var(--bg-app);
-}
-
-/* TOP HEADER */
-.top-header {
-  height: 64px;
-  background-color: var(--bg-card);
-  border-bottom: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
-  position: sticky;
-  top: 0;
-  z-index: 40;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
-}
+:root{
+  --bg:#0a0e17;
+  --bg-deep:#060910;
+  --panel:#10161f;
+  --panel-raised:#141b26;
+  --grid:#1a2333;
+  --border:#232f45;
+  --border-bright:#33455e;
+  --text:#e9eef7;
+  --text-dim:#97a4bd;
+  --text-faint:#55627c;
+  --scan:#4fa8ff;
+  --scan-dim:#1c4d7a;
+  --safe:#35d399;
+  --safe-dim:#0f4a3a;
+  --danger:#ff4d6d;
+  --danger-dim:#5a1a2a;
+  --warn:#ffb454;
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --sans:'Inter',system-ui,sans-serif;
 }
 
-.breadcrumb {
-  font-size: 13px;
-  color: var(--text-muted);
-  display: flex;
-  align-items: center;
-  gap: 6px;
+*{
+  box-sizing:border-box;
 }
 
-.breadcrumb span.current {
-  color: var(--text-main);
-  font-weight: 600;
+html,body{
+  margin:0;
+  padding:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
 }
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+body{
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  font-weight: 500;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 1px solid transparent;
-  transition: all 0.15s ease;
-  user-select: none;
-  text-decoration: none;
-}
+  background-size:42px 42px;
+  background-position:center;
 
-.btn-primary {
-  background-color: var(--accent-primary);
-  color: #ffffff;
-  border-color: var(--accent-primary);
-  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
-}
+  display:flex;
+  align-items:center;
+  justify-content:center;
 
-.btn-primary:hover {
-  background-color: var(--accent-primary-hover);
-  border-color: var(--accent-primary-hover);
-}
+  padding:48px 20px;
 
-.btn-secondary {
-  background-color: #ffffff;
-  color: var(--text-secondary);
-  border-color: var(--border-subtle);
+  position:relative;
+  overflow-x:hidden;
 }
 
-.btn-secondary:hover {
-  background-color: var(--bg-card-subtle);
-  color: var(--text-main);
-  border-color: #cbd5e1;
-}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
 
-.btn-danger {
-  background-color: #ffffff;
-  color: var(--status-danger);
-  border-color: var(--status-danger-border);
-}
+  background:
+    radial-gradient(
+      ellipse 60% 50% at 50% 0%,
+      rgba(79,168,255,0.08),
+      transparent 60%
+    ),
 
-.btn-danger:hover {
-  background-color: var(--status-danger-bg);
-}
+    radial-gradient(
+      ellipse 50% 40% at 50% 100%,
+      rgba(53,211,153,0.05),
+      transparent 60%
+    );
 
-.btn-sm {
-  padding: 5px 10px;
-  font-size: 12px;
+  pointer-events:none;
 }
 
-/* WORKSPACE VIEW CONTAINER */
-.workspace-container {
-  padding: 28px;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-  flex: 1;
-}
+.console{
+  position:relative;
 
-.view-panel {
-  display: none;
-}
+  width:100%;
+  max-width:700px;
+
+  background:
+    linear-gradient(
+      180deg,
+      var(--panel-raised),
+      var(--panel)
+    );
+
+  border:1px solid var(--border);
+
+  border-radius:14px;
 
-.view-panel.active {
-  display: block;
-  animation: fadeIn 0.2s ease-in-out;
+  box-shadow:
+    0 40px 80px -30px rgba(0,0,0,0.7),
+    0 0 0 1px rgba(255,255,255,0.02) inset;
+
+  overflow:hidden;
 }
+
+/* TOP BAR */
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding:14px 18px;
+
+  border-bottom:1px solid var(--border);
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to { opacity: 1; transform: translateY(0); }
+  background:rgba(255,255,255,0.015);
 }
 
-/* HEADINGS */
-.section-header {
-  margin-bottom: 24px;
+.topbar-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
 
-.section-header h1 {
-  font-size: 22px;
-  font-weight: 800;
-  color: var(--text-main);
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
+.dot{
+  width:9px;
+  height:9px;
+
+  border-radius:50%;
+
+  background:var(--text-faint);
 }
+
+.dot.live{
+  background:var(--safe);
+
+  box-shadow:
+    0 0 8px var(--safe);
 
-.section-header p {
-  font-size: 13.5px;
-  color: var(--text-muted);
+  animation:pulse-dot 2s ease-in-out infinite;
 }
 
-/* CARDS */
-.card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: var(--shadow-card);
-  margin-bottom: 20px;
-  transition: box-shadow 0.2s ease;
+@keyframes pulse-dot{
+
+  0%,100%{
+    opacity:1;
+  }
+
+  50%{
+    opacity:.4;
+  }
+
 }
+
+.sys-label{
+
+  font-family:var(--mono);
 
-.card:hover {
-  box-shadow: var(--shadow-hover);
+  font-size:11px;
+
+  letter-spacing:.12em;
+
+  color:var(--text-faint);
+
+  text-transform:uppercase;
 }
+
+.sys-id{
+
+  font-family:var(--mono);
 
-.card-title {
-  font-size: 14.5px;
-  font-weight: 700;
-  color: var(--text-main);
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  font-size:11px;
+
+  color:var(--text-faint);
+
+  letter-spacing:.05em;
 }
+
+/* HEADER */
+
+.header{
+
+  padding:30px 30px 22px;
 
-/* STATS GRID */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  border-bottom:1px solid var(--border);
 }
 
-.stat-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 12px;
-  padding: 18px 20px;
-  box-shadow: var(--shadow-card);
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
+.eyebrow{
+
+  font-family:var(--mono);
+
+  font-size:11px;
+
+  font-weight:500;
+
+  letter-spacing:.2em;
+
+  text-transform:uppercase;
+
+  color:var(--scan);
+
+  display:flex;
+
+  align-items:center;
+
+  gap:8px;
+
+  margin-bottom:14px;
 }
+
+.eyebrow::before{
+
+  content:"";
+
+  width:16px;
+
+  height:1px;
 
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-hover);
+  background:var(--scan);
 }
+
+h1{
+
+  font-family:var(--mono);
+
+  font-size:26px;
+
+  font-weight:700;
+
+  letter-spacing:-.01em;
 
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--accent-primary);
+  margin:0 0 10px;
+
+  line-height:1.15;
 }
+
+h1 span{
 
-.stat-card.safe::before { background: var(--status-safe); }
-.stat-card.danger::before { background: var(--status-danger); }
-.stat-card.purple::before { background: var(--accent-purple); }
+  color:var(--text-dim);
 
-.stat-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 8px;
+  font-weight:400;
 }
+
+.sub{
+
+  font-size:14px;
 
-.stat-value {
-  font-size: 28px;
-  font-weight: 800;
-  color: var(--text-main);
-  line-height: 1.1;
-  font-family: var(--font-sans);
+  color:var(--text-dim);
+
+  line-height:1.6;
+
+  max-width:50ch;
+
+  margin:0;
 }
+
+/* MODE SELECTOR */
+
+.mode-area{
 
-.stat-sub {
-  font-size: 11.5px;
-  color: var(--text-muted);
-  margin-top: 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  padding:20px 30px 0;
 }
 
-/* BADGES & PILLS */
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
+.mode-label{
+
+  font-family:var(--mono);
+
+  font-size:10px;
+
+  letter-spacing:.12em;
+
+  text-transform:uppercase;
+
+  color:var(--text-faint);
+
+  margin-bottom:10px;
 }
+
+.mode-buttons{
 
-.pill-safe {
-  background-color: var(--status-safe-bg);
-  color: var(--status-safe);
-  border: 1px solid var(--status-safe-border);
+  display:flex;
+
+  gap:8px;
 }
+
+.mode-btn{
+
+  flex:1;
 
-.pill-danger {
-  background-color: var(--status-danger-bg);
-  color: var(--status-danger);
-  border: 1px solid var(--status-danger-border);
+  padding:11px 14px;
+
+  background:var(--bg-deep);
+
+  border:1px solid var(--border);
+
+  border-radius:7px;
+
+  color:var(--text-dim);
+
+  font-family:var(--mono);
+
+  font-size:11px;
+
+  font-weight:600;
+
+  letter-spacing:.08em;
+
+  text-transform:uppercase;
+
+  cursor:pointer;
+
+  transition:.2s ease;
 }
 
-.pill-warn {
-  background-color: var(--status-warn-bg);
-  color: var(--status-warn);
-  border: 1px solid var(--status-warn-border);
+.mode-btn:hover{
+
+  border-color:var(--border-bright);
+
+  color:var(--text);
 }
+
+.mode-btn.active{
 
-.pill-info {
-  background-color: var(--status-info-bg);
-  color: var(--status-info);
-  border: 1px solid var(--status-info-border);
+  border-color:var(--scan);
+
+  color:var(--scan);
+
+  background:rgba(79,168,255,.08);
+
+  box-shadow:
+    0 0 0 2px rgba(79,168,255,.05);
 }
+
+/* WAVE */
+
+.wave-wrap{
 
-.pill-neutral {
-  background-color: var(--bg-card-subtle);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
+  padding:22px 30px;
+
+  margin-top:20px;
+
+  border-top:1px solid var(--border);
+
+  border-bottom:1px solid var(--border);
+
+  background:var(--bg-deep);
+
+  position:relative;
 }
+
+.wave-meta{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  align-items:baseline;
 
-/* PIPELINE VISUAL ARCHITECTURE */
-.pipeline-flow-card {
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-  border: 1px solid var(--border-card);
-  border-radius: 16px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: var(--shadow-card);
+  margin-bottom:12px;
+
+  font-family:var(--mono);
 }
+
+.wave-meta .label{
+
+  font-size:10px;
+
+  letter-spacing:.14em;
+
+  color:var(--text-faint);
 
-.pipeline-diagram {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 16px 0;
-  overflow-x: auto;
+  text-transform:uppercase;
 }
+
+.wave-meta .verdict{
+
+  font-size:12px;
+
+  font-weight:600;
+
+  letter-spacing:.08em;
+
+  color:var(--text-faint);
 
-.pipeline-node {
-  background: #ffffff;
-  border: 1px solid var(--border-card);
-  border-radius: 10px;
-  padding: 14px 16px;
-  text-align: center;
-  min-width: 140px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  transition: all 0.2s ease;
+  transition:color .3s ease;
 }
 
-.pipeline-node:hover {
-  border-color: var(--accent-primary);
-  box-shadow: var(--shadow-card);
-  transform: translateY(-2px);
+.verdict.state-safe{
+  color:var(--safe);
 }
 
-.pipeline-node .node-type {
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: var(--accent-primary);
-  letter-spacing: 0.05em;
-  margin-bottom: 4px;
+.verdict.state-danger{
+  color:var(--danger);
 }
 
-.pipeline-node .node-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-main);
+.verdict.state-scan{
+  color:var(--scan);
 }
 
-.pipeline-arrow {
-  color: #94a3b8;
-  font-size: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
+.verdict.state-error{
+  color:var(--warn);
 }
 
-/* CHIPS FOR SAMPLES */
-.sample-chips-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 14px;
+canvas#wave{
+
+  display:block;
+
+  width:100%;
+
+  height:96px;
+
+  border-radius:6px;
 }
+
+.readout{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  margin-top:12px;
+
+  font-family:var(--mono);
 
-.chip {
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  font-size: 11.5px;
-  font-weight: 500;
-  padding: 5px 10px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  user-select: none;
+  font-size:11px;
+
+  color:var(--text-faint);
+
+  letter-spacing:.04em;
 }
 
-.chip:hover {
-  background: #e2e8f0;
-  color: var(--text-main);
-  border-color: #cbd5e1;
+.readout b{
+
+  color:var(--text-dim);
+
+  font-weight:500;
 }
+
+/* INPUT */
 
-.chip.active {
-  background: var(--accent-primary-light);
-  color: var(--accent-primary);
-  border-color: #bfdbfe;
+.input-area{
+
+  padding:26px 30px 10px;
 }
+
+.field-label{
+
+  font-family:var(--mono);
+
+  font-size:11px;
+
+  letter-spacing:.12em;
 
-/* FORMS & INPUTS */
-.form-group {
-  margin-bottom: 16px;
+  text-transform:uppercase;
+
+  color:var(--text-faint);
+
+  display:block;
+
+  margin-bottom:10px;
 }
+
+.input-shell{
+
+  position:relative;
+
+  border:1px solid var(--border);
+
+  border-radius:8px;
+
+  background:var(--bg-deep);
+
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease;
 
-.form-label {
-  display: block;
-  font-size: 12.5px;
-  font-weight: 600;
-  color: var(--text-main);
-  margin-bottom: 6px;
+  overflow:hidden;
 }
 
-.input-text, .select-input, .textarea-input {
-  width: 100%;
-  font-family: var(--font-sans);
-  font-size: 13px;
-  color: var(--text-main);
-  background-color: var(--bg-input);
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  padding: 9px 12px;
-  outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+.input-shell.focused{
+
+  border-color:var(--scan);
+
+  box-shadow:
+    0 0 0 3px rgba(79,168,255,.12);
 }
+
+.input-shell::before{
+
+  content:"›";
+
+  position:absolute;
+
+  left:14px;
+
+  top:22px;
+
+  color:var(--text-faint);
+
+  font-family:var(--mono);
+
+  font-size:15px;
 
-.textarea-input {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  resize: vertical;
-  min-height: 110px;
-  line-height: 1.5;
+  pointer-events:none;
 }
 
-.input-text:focus, .select-input:focus, .textarea-input:focus {
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px var(--accent-primary-glow);
+#inputText{
+
+  width:100%;
+
+  min-height:100px;
+
+  background:transparent;
+
+  border:none;
+
+  outline:none;
+
+  color:var(--text);
+
+  font-family:var(--mono);
+
+  font-size:14px;
+
+  padding:15px 16px 15px 34px;
+
+  resize:vertical;
+
+  line-height:1.5;
 }
 
-/* EXPLAINABLE RESULT COMPONENT */
-.results-container {
-  display: none;
-  margin-top: 24px;
+#inputText::placeholder{
+
+  color:var(--text-faint);
 }
+
+.scanline{
+
+  position:absolute;
 
-.results-container.show {
-  display: block;
-  animation: fadeIn 0.25s ease-in-out;
+  top:0;
+  left:0;
+  right:0;
+
+  height:2px;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      var(--scan),
+      transparent
+    );
+
+  opacity:0;
+
+  pointer-events:none;
 }
+
+.scanline.active{
 
-.verdict-banner {
-  border-radius: 12px;
-  padding: 20px 24px;
-  margin-bottom: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid transparent;
+  opacity:1;
+
+  animation:sweep 1.3s linear infinite;
 }
+
+@keyframes sweep{
+
+  0%{
+    transform:translateY(0);
+  }
+
+  100%{
+    transform:translateY(100px);
+  }
 
-.verdict-banner.safe {
-  background-color: var(--status-safe-bg);
-  border-color: var(--status-safe-border);
 }
+
+.hint-row{
+
+  display:flex;
+
+  justify-content:space-between;
+
+  margin-top:8px;
+
+  font-family:var(--mono);
 
-.verdict-banner.danger {
-  background-color: var(--status-danger-bg);
-  border-color: var(--status-danger-border);
+  font-size:10.5px;
+
+  color:var(--text-faint);
 }
+
+/* BUTTON */
+
+.controls{
+
+  padding:20px 30px 20px;
+
+  display:flex;
 
-.verdict-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
+  gap:12px;
+
+  align-items:center;
 }
+
+button#scanBtn{
+
+  flex:1;
+
+  background:var(--scan);
+
+  color:#06111d;
 
-.verdict-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-size: 22px;
-  font-weight: 800;
-  flex-shrink: 0;
+  border:none;
+
+  border-radius:8px;
+
+  padding:14px 18px;
+
+  font-family:var(--mono);
+
+  font-weight:700;
+
+  font-size:13px;
+
+  letter-spacing:.1em;
+
+  text-transform:uppercase;
+
+  cursor:pointer;
+
+  transition:
+    transform .12s ease,
+    background .2s ease,
+    box-shadow .2s ease;
+
+  box-shadow:
+    0 8px 20px -8px rgba(79,168,255,.6);
 }
+
+button#scanBtn:hover{
 
-.verdict-banner.safe .verdict-icon {
-  background-color: var(--status-safe);
+  background:#6cb6ff;
 }
 
-.verdict-banner.danger .verdict-icon {
-  background-color: var(--status-danger);
+button#scanBtn:active{
+
+  transform:scale(.98);
 }
+
+button#scanBtn:disabled{
+
+  opacity:.6;
 
-.verdict-title {
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
+  cursor:progress;
 }
 
-.verdict-banner.safe .verdict-title { color: var(--status-safe); }
-.verdict-banner.danger .verdict-title { color: var(--status-danger); }
+button#scanBtn.state-loading{
 
-.verdict-sub {
-  font-size: 13px;
-  color: var(--text-secondary);
-  margin-top: 3px;
+  background:var(--panel-raised);
+
+  color:var(--scan);
+
+  border:1px solid var(--border-bright);
+
+  box-shadow:none;
 }
+
+/* RESULT */
+
+.result-panel{
 
-/* 4-STAGE EXPLAINABILITY CARDS */
-.stages-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+  margin:0 30px 20px;
+
+  border-radius:10px;
+
+  border:1px solid var(--border);
+
+  background:var(--bg-deep);
+
+  overflow:hidden;
+
+  max-height:0;
+
+  opacity:0;
+
+  transition:
+    max-height .4s ease,
+    opacity .3s ease;
 }
+
+.result-panel.show{
+
+  max-height:600px;
 
-.stage-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 12px;
-  padding: 16px 18px;
-  box-shadow: var(--shadow-card);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  opacity:1;
 }
 
-.stage-card.passed {
-  border-top: 3px solid var(--status-safe);
+.result-panel.tone-safe{
+
+  border-color:var(--safe-dim);
 }
+
+.result-panel.tone-danger{
 
-.stage-card.triggered {
-  border-top: 3px solid var(--status-danger);
-  background: #fffcfc;
+  border-color:var(--danger-dim);
 }
 
-.stage-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
+.result-panel.tone-error{
+
+  border-color:#5a421a;
 }
+
+.result-inner{
+
+  padding:18px 20px;
 
-.stage-name {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-main);
+  display:flex;
+
+  gap:14px;
+
+  align-items:flex-start;
 }
+
+.badge{
+
+  flex-shrink:0;
+
+  width:34px;
 
-.stage-status {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 8px;
-  border-radius: 4px;
-  text-transform: uppercase;
+  height:34px;
+
+  border-radius:8px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  font-family:var(--mono);
+
+  font-weight:700;
+
+  font-size:15px;
 }
+
+.badge.tone-safe{
+
+  background:var(--safe-dim);
 
-.stage-status.pass {
-  background: var(--status-safe-bg);
-  color: var(--status-safe);
+  color:var(--safe);
 }
 
-.stage-status.fail {
-  background: var(--status-danger-bg);
-  color: var(--status-danger);
+.badge.tone-danger{
+
+  background:var(--danger-dim);
+
+  color:var(--danger);
 }
 
-.stage-body {
-  font-size: 12px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  margin-bottom: 12px;
+.badge.tone-error{
+
+  background:#3a2a10;
+
+  color:var(--warn);
 }
+
+.result-text{
 
-.stage-meta {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  background: var(--bg-card-subtle);
-  padding: 6px 10px;
-  border-radius: 6px;
-  color: var(--text-muted);
-  border: 1px solid var(--border-subtle);
-  word-break: break-all;
+  flex:1;
 }
+
+.result-text .r-title{
+
+  font-family:var(--mono);
+
+  font-size:12px;
+
+  letter-spacing:.1em;
+
+  text-transform:uppercase;
 
-/* VISUAL DECISION EXPLANATION ("Why This Result?") */
-.why-result-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-card);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow-card);
+  font-weight:700;
+
+  margin-bottom:5px;
 }
+
+.result-text .r-title.tone-safe{
 
-.flow-step-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 10px 0;
-  font-size: 12.5px;
+  color:var(--safe);
 }
 
-.step-indicator {
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-  background: var(--bg-card-subtle);
-  border: 1px solid var(--border-subtle);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-secondary);
-  flex-shrink: 0;
+.result-text .r-title.tone-danger{
+
+  color:var(--danger);
 }
+
+.result-text .r-title.tone-error{
 
-/* TABLES */
-.data-table-wrapper {
-  overflow-x: auto;
-  border: 1px solid var(--border-subtle);
-  border-radius: 8px;
-  background: #ffffff;
+  color:var(--warn);
 }
 
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-  text-align: left;
+.result-text .r-body{
+
+  font-size:13.5px;
+
+  color:var(--text-dim);
+
+  line-height:1.55;
 }
 
-.data-table th {
-  background-color: var(--bg-card-subtle);
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border-subtle);
+.result-text .r-body b{
+
+  color:var(--text);
 }
+
+/* STAGE RESULTS */
 
-.data-table td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border-subtle);
-  color: var(--text-main);
+.stage-title{
+
+  margin-top:16px;
+
+  margin-bottom:8px;
+
+  font-family:var(--mono);
+
+  font-size:10px;
+
+  color:var(--text-faint);
+
+  letter-spacing:.12em;
+
+  text-transform:uppercase;
 }
+
+.stage-grid{
+
+  display:grid;
+
+  grid-template-columns:1fr 1fr;
 
-.data-table tr:last-child td {
-  border-bottom: none;
+  gap:7px;
+
+  margin-top:8px;
 }
+
+.stage{
+
+  padding:9px 10px;
+
+  border:1px solid var(--border);
+
+  border-radius:6px;
+
+  display:flex;
+
+  align-items:center;
+
+  justify-content:space-between;
+
+  background:rgba(255,255,255,.01);
 
-.data-table tr:hover td {
-  background-color: #f8fafc;
+  font-family:var(--mono);
+
+  font-size:10px;
 }
+
+.stage-name{
 
-/* CODE DISPLAYS */
-.code-display {
-  background-color: var(--bg-code);
-  color: var(--text-code);
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 14px;
-  border-radius: 8px;
-  overflow-x: auto;
-  white-space: pre-wrap;
-  line-height: 1.5;
+  color:var(--text-dim);
 }
 
-/* MODAL DRAWER */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(15, 23, 42, 0.45);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  align-items: center;
-  justify-content: center;
+.stage-status{
+
+  font-weight:700;
+
+  letter-spacing:.05em;
 }
+
+.stage-status.detected{
 
-.modal-overlay.open {
-  display: flex;
+  color:var(--danger);
 }
 
-.modal-card {
-  background: #ffffff;
-  border-radius: 14px;
-  width: 90%;
-  max-width: 680px;
-  max-height: 85vh;
-  overflow-y: auto;
-  box-shadow: var(--shadow-pop);
-  padding: 24px;
-  border: 1px solid var(--border-card);
+.stage-status.clear{
+
+  color:var(--safe);
 }
+
+/* FOOTER */
+
+.footer{
+
+  padding:12px 30px 20px;
+
+  display:flex;
 
-.modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 18px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-subtle);
+  justify-content:space-between;
+
+  font-family:var(--mono);
+
+  font-size:10px;
+
+  color:var(--text-faint);
+
+  letter-spacing:.06em;
 }
+
+@media(max-width:520px){
+
+  .header,
+  .wave-wrap,
+  .input-area,
+  .controls,
+  .footer,
+  .mode-area{
+
+    padding-left:20px;
+    padding-right:20px;
+  }
+
+  .result-panel{
+
+    margin-left:20px;
+    margin-right:20px;
+  }
 
-/* RESPONSIVE */
-@media (max-width: 1024px) {
-  .sidebar { width: 72px; }
-  .brand-info, .nav-section-title, .nav-item span, .sidebar-footer span { display: none; }
-  .nav-item { justify-content: center; padding: 12px; }
+  h1{
+
+    font-size:21px;
+  }
+
+  .stage-grid{
+
+    grid-template-columns:1fr;
+  }
+
+  .sys-id{
+
+    display:none;
+  }
 }
 
-@media (max-width: 768px) {
-  .top-header { padding: 0 16px; }
-  .workspace-container { padding: 16px; }
-  .stats-grid { grid-template-columns: 1fr; }
-  .stages-grid { grid-template-columns: 1fr; }
+@media(prefers-reduced-motion:reduce){
+
+  .dot.live,
+  .scanline.active{
+
+    animation:none;
+  }
+
+  *{
+
+    transition-duration:.01ms !important;
+  }
 }
+
 </style>
 </head>
+
 <body>
 
-<div class="app-container">
+<div class="console">
 
-  <!-- ======================================================== -->
-  <!-- SIDEBAR NAVIGATION -->
-  <!-- ======================================================== -->
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <div class="brand-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <path d="m9 12 2 2 4-4"/>
-        </svg>
-      </div>
-      <div class="brand-info">
-        <h2>SIGNAL</h2>
-        <span>Input Defense WAF</span>
-      </div>
+  <!-- TOP BAR -->
+
+  <div class="topbar">
+
+    <div class="topbar-left">
+
+      <span class="dot live" id="statusDot"></span>
+
+      <span class="sys-label">
+        Signal Intelligence Online
+      </span>
+
     </div>
 
-    <nav class="sidebar-nav">
-      <div class="nav-section-title">Core Operations</div>
-      <div class="nav-item active" onclick="switchView('overview')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-        </div>
-        <span>Overview</span>
-      </div>
+    <span class="sys-id">
+      NODE 127.0.0.1:8000
+    </span>
 
-      <div class="nav-item" onclick="switchView('text-scanner')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        </div>
-        <span>Text Scanner</span>
-      </div>
+  </div>
 
-      <div class="nav-item" onclick="switchView('url-scanner')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        </div>
-        <span>URL Scanner</span>
-      </div>
 
-      <div class="nav-item" onclick="switchView('api-scanner')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-        </div>
-        <span>API Scanner</span>
-      </div>
+  <!-- HEADER -->
 
-      <div class="nav-item" onclick="switchView('history')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 14 14"/></svg>
-        </div>
-        <span>Detection History</span>
-      </div>
+  <div class="header">
 
-      <div class="nav-section-title">Theoretical Engines</div>
-      <div class="nav-item" onclick="switchView('regex-analyzer')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
-        </div>
-        <span>Regex Analyzer</span>
-      </div>
-
-      <div class="nav-item" onclick="switchView('dfa-visualizer')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="18" cy="18" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.5" y1="7.5" x2="15.5" y2="16.5"/><line x1="15.5" y1="6" x2="8.5" y2="6"/></svg>
-        </div>
-        <span>DFA Visualizer</span>
-      </div>
-
-      <div class="nav-item" onclick="switchView('grammar-analyzer')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
-        </div>
-        <span>Grammar Analyzer</span>
-      </div>
-
-      <div class="nav-item" onclick="switchView('machine-learning')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
-        </div>
-        <span>Machine Learning</span>
-      </div>
-
-      <div class="nav-section-title">System & Docs</div>
-      <div class="nav-item" onclick="switchView('about')">
-        <div class="nav-icon">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        </div>
-        <span>Settings / About</span>
-      </div>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="engine-status-pill">
-        <div class="pulse-dot"></div>
-        <span>Pipeline Engine Active</span>
-      </div>
+    <div class="eyebrow">
+      Threat Analysis
     </div>
-  </aside>
 
-  <!-- ======================================================== -->
-  <!-- MAIN WORKSPACE -->
-  <!-- ======================================================== -->
-  <div class="main-wrapper">
+    <h1>
+      Malicious Input
+      <span>Detector</span>
+    </h1>
 
-    <!-- Top Header -->
-    <header class="top-header">
-      <div class="header-left">
-        <div class="breadcrumb">
-          <span>SIGNAL</span>
-          <span>/</span>
-          <span class="current" id="breadcrumbTitle">Overview Dashboard</span>
-        </div>
+    <p class="sub">
+
+      Analyze text, URLs and API endpoints using
+      a hybrid multi-stage detection pipeline.
+
+    </p>
+
+  </div>
+
+
+  <!-- MODE -->
+
+  <div class="mode-area">
+
+    <div class="mode-label">
+      Scan Mode
+    </div>
+
+    <div class="mode-buttons">
+
+      <button
+        class="mode-btn active"
+        id="textModeBtn"
+        onclick="setScanMode('text')">
+
+        TEXT INPUT
+
+      </button>
+
+      <button
+        class="mode-btn"
+        id="urlModeBtn"
+        onclick="setScanMode('url')">
+
+        URL / API
+
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- WAVE -->
+
+  <div class="wave-wrap">
+
+    <div class="wave-meta">
+
+      <span class="label">
+        Signal Trace
+      </span>
+
+      <span
+        class="verdict state-scan"
+        id="verdictLabel">
+
+        Idle
+
+      </span>
+
+    </div>
+
+
+    <canvas id="wave"></canvas>
+
+
+    <div class="readout">
+
+      <span>
+        AMPLITUDE
+        <b id="ampReadout">0.00</b>
+      </span>
+
+      <span>
+        SAMPLES
+        <b id="sampleReadout">0</b>
+      </span>
+
+      <span>
+        MODE
+        <b id="modeReadout">STANDBY</b>
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- INPUT -->
+
+  <div class="input-area">
+
+    <label
+      class="field-label"
+      for="inputText"
+      id="inputLabel">
+
+      Input String
+
+    </label>
+
+
+    <div
+      class="input-shell"
+      id="inputShell">
+
+      <div
+        class="scanline"
+        id="scanline">
       </div>
 
-      <div class="header-right">
-        <span class="pill pill-safe">
-          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#059669;"></span>
-          Backend 127.0.0.1:8000
-        </span>
-        <a href="/download-pdf" class="btn btn-secondary btn-sm" title="Download Official PDF Reference" target="_blank">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Documentation (PDF)
-        </a>
+
+      <textarea
+        id="inputText"
+        rows="3"
+        placeholder="Paste or type the text you want analyzed...">
+      </textarea>
+
+    </div>
+
+
+    <div class="hint-row">
+
+      <span id="charCount">
+        0 characters
+      </span>
+
+      <span>
+        Ctrl + Enter to scan
+      </span>
+
+    </div>
+
+  </div>
+
+
+  <!-- BUTTON -->
+
+  <div class="controls">
+
+    <button
+      id="scanBtn"
+      onclick="checkInput()">
+
+      Run Scan
+
+    </button>
+
+  </div>
+
+
+  <!-- RESULT -->
+
+  <div
+    class="result-panel"
+    id="resultPanel">
+
+    <div class="result-inner">
+
+      <div
+        class="badge"
+        id="badge">
+
+        —
+
       </div>
-    </header>
 
-    <main class="workspace-container">
 
-      <!-- ==================================================== -->
-      <!-- VIEW 1: OVERVIEW DASHBOARD -->
-      <!-- ==================================================== -->
-      <section id="view-overview" class="view-panel active">
-        <div class="section-header">
-          <h1>Security Intelligence Overview</h1>
-          <p>Real-time analytics across the 4-stage hybrid malicious input inspection pipeline.</p>
+      <div class="result-text">
+
+        <div
+          class="r-title"
+          id="rTitle">
+
+          —
+
         </div>
 
-        <!-- Metric KPI Cards -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Total Inputs Scanned</div>
-            <div class="stat-value" id="statTotalScans">0</div>
-            <div class="stat-sub">
-              <span class="pill pill-neutral">All Vectors</span>
-              <span>Persistent SQLite</span>
-            </div>
-          </div>
 
-          <div class="stat-card safe">
-            <div class="stat-label">Clean / Safe Inputs</div>
-            <div class="stat-value" id="statSafeCount">0</div>
-            <div class="stat-sub">
-              <span class="pill pill-safe" id="statSafeRate">0%</span>
-              <span>Validated Normal</span>
-            </div>
-          </div>
+        <div
+          class="r-body"
+          id="rBody">
 
-          <div class="stat-card danger">
-            <div class="stat-label">Malicious Injections</div>
-            <div class="stat-value" id="statThreatCount">0</div>
-            <div class="stat-sub">
-              <span class="pill pill-danger" id="statThreatRate">0%</span>
-              <span>Interception Rate</span>
-            </div>
-          </div>
+          —
 
-          <div class="stat-card purple">
-            <div class="stat-label">Detection Engines</div>
-            <div class="stat-value">4 / 4</div>
-            <div class="stat-sub">
-              <span class="pill pill-info">Hybrid Flow</span>
-              <span>Chomsky Type 3 + 2 + ML</span>
-            </div>
-          </div>
         </div>
 
-        <!-- Central Pipeline Architecture Flow -->
-        <div class="pipeline-flow-card">
-          <div class="card-title">
-            <span>Hybrid Pipeline Architecture</span>
-            <span class="pill pill-info">Chomsky Hierarchy Integration</span>
-          </div>
-          <div class="pipeline-diagram">
-            <div class="pipeline-node">
-              <div class="node-type">Ingestion</div>
-              <div class="node-title">Raw Input Stream</div>
-            </div>
-            <div class="pipeline-arrow">&rarr;</div>
-            <div class="pipeline-node">
-              <div class="node-type">Normalization</div>
-              <div class="node-title">Unicode NFKC</div>
-            </div>
-            <div class="pipeline-arrow">&rarr;</div>
-            <div class="pipeline-node" style="border-color:#3b82f6;">
-              <div class="node-type" style="color:#2563eb;">Stage 1: Regex</div>
-              <div class="node-title">Type 3 Patterns</div>
-            </div>
-            <div class="pipeline-arrow">&rarr;</div>
-            <div class="pipeline-node" style="border-color:#0891b2;">
-              <div class="node-type" style="color:#0891b2;">Stage 2: DFA</div>
-              <div class="node-title">Finite Automata</div>
-            </div>
-            <div class="pipeline-arrow">&rarr;</div>
-            <div class="pipeline-node" style="border-color:#7c3aed;">
-              <div class="node-type" style="color:#7c3aed;">Stage 3: CFG</div>
-              <div class="node-title">Syntax Parser</div>
-            </div>
-            <div class="pipeline-arrow">&rarr;</div>
-            <div class="pipeline-node" style="border-color:#f59e0b;">
-              <div class="node-type" style="color:#d97706;">Stage 4: ML</div>
-              <div class="node-title">TF-IDF Classifier</div>
-            </div>
-            <div class="pipeline-arrow">&rarr;</div>
-            <div class="pipeline-node" style="border-color:#059669;background:#f0fdf4;">
-              <div class="node-type" style="color:#059669;">Arbitration</div>
-              <div class="node-title">Final Verdict</div>
-            </div>
-          </div>
+
+        <!-- STAGES -->
+
+        <div
+          class="stage-title"
+          id="stageTitle"
+          style="display:none;">
+
+          Detection Stages
+
         </div>
 
-        <!-- Recent Threats & Method Breakdown -->
-        <div style="display:grid;grid-template-columns: 2fr 1fr;gap:20px;">
-          <div class="card">
-            <div class="card-title">
-              <span>Recent Scanning Activity</span>
-              <button class="btn btn-secondary btn-sm" onclick="fetchHistoryData()">Refresh</button>
-            </div>
-            <div class="data-table-wrapper">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Timestamp</th>
-                    <th>Type</th>
-                    <th>Payload Preview</th>
-                    <th>Verdict</th>
-                  </tr>
-                </thead>
-                <tbody id="overviewRecentActivityBody">
-                  <tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:18px;">Loading telemetry...</td></tr>
-                </tbody>
-              </table>
-            </div>
+
+        <div
+          class="stage-grid"
+          id="stageGrid"
+          style="display:none;">
+
+          <div class="stage">
+
+            <span class="stage-name">
+              Stage 1 · Regex
+            </span>
+
+            <span
+              class="stage-status"
+              id="regexStage">
+
+              —
+
+            </span>
+
           </div>
 
-          <div class="card">
-            <div class="card-title">Stage Trigger Distribution</div>
-            <div style="display:flex;flex-direction:column;gap:12px;margin-top:8px;">
-              <div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-                  <span style="font-weight:600;">Stage 1: Regular Expressions</span>
-                  <span id="stageDistRegex">0</span>
-                </div>
-                <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
-                  <div id="barStageRegex" style="height:100%;width:50%;background:#3b82f6;"></div>
-                </div>
-              </div>
 
-              <div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-                  <span style="font-weight:600;">Stage 2: Deterministic Automata</span>
-                  <span id="stageDistDfa">0</span>
-                </div>
-                <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
-                  <div id="barStageDfa" style="height:100%;width:50%;background:#0891b2;"></div>
-                </div>
-              </div>
+          <div class="stage">
 
-              <div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-                  <span style="font-weight:600;">Stage 3: Context-Free Grammar</span>
-                  <span id="stageDistCfg">0</span>
-                </div>
-                <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
-                  <div id="barStageCfg" style="height:100%;width:50%;background:#7c3aed;"></div>
-                </div>
-              </div>
+            <span class="stage-name">
+              Stage 2 · DFA
+            </span>
 
-              <div>
-                <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;">
-                  <span style="font-weight:600;">Stage 4: Machine Learning</span>
-                  <span id="stageDistMl">0</span>
-                </div>
-                <div style="height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden;">
-                  <div id="barStageMl" style="height:100%;width:50%;background:#d97706;"></div>
-                </div>
-              </div>
-            </div>
+            <span
+              class="stage-status"
+              id="dfaStage">
+
+              —
+
+            </span>
+
           </div>
-        </div>
-      </section>
 
-      <!-- ==================================================== -->
-      <!-- VIEW 2: TEXT SCANNER -->
-      <!-- ==================================================== -->
-      <section id="view-text-scanner" class="view-panel">
-        <div class="section-header">
-          <h1>Text Input Scanner</h1>
-          <p>Inspect arbitrary text payloads, SQL clauses, XSS scripts, or command injections with full 4-stage explainability.</p>
+
+          <div class="stage">
+
+            <span class="stage-name">
+              Stage 3 · CFG
+            </span>
+
+            <span
+              class="stage-status"
+              id="cfgStage">
+
+              —
+
+            </span>
+
+          </div>
+
+
+          <div class="stage">
+
+            <span class="stage-name">
+              Stage 4 · ML
+            </span>
+
+            <span
+              class="stage-status"
+              id="mlStage">
+
+              —
+
+            </span>
+
+          </div>
+
         </div>
 
-        <div class="card">
-          <div class="card-title">Quick Test Samples</div>
-          <div class="sample-chips-row">
-            <span class="chip" onclick="loadTextSample('normal')">Benign Login Query</span>
-            <span class="chip" onclick="loadTextSample('sqli_tautology')">SQLi: admin' OR 1=1 --</span>
-            <span class="chip" onclick="loadTextSample('sqli_union')">SQLi: ' UNION SELECT username, password FROM users --</span>
-            <span class="chip" onclick="loadTextSample('xss_script')">XSS: &lt;script&gt;alert(1)&lt;/script&gt;</span>
-            <span class="chip" onclick="loadTextSample('xss_onerror')">XSS: &lt;img src=x onerror=alert(document.cookie)&gt;</span>
-            <span class="chip" onclick="loadTextSample('traversal')">Path: ../../etc/passwd</span>
-            <span class="chip" onclick="loadTextSample('command')">Command: | whoami</span>
-            <span class="chip" onclick="loadTextSample('num7')">Numeric: 7 (Out-of-Vocabulary Zero Vector)</span>
-          </div>
+      </div>
 
-          <div class="form-group">
-            <label class="form-label" for="textScanInput">Input Payload to Analyze</label>
-            <textarea id="textScanInput" class="textarea-input" placeholder="Enter text, SQL query, script tag, or payload here..." oninput="updateCharCount()"></textarea>
-            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--text-muted);margin-top:6px;">
-              <span>Safe static inspection. No backend code execution dispatched.</span>
-              <span id="charCount">0 characters</span>
-            </div>
-          </div>
+    </div>
 
-          <div style="display:flex;gap:12px;">
-            <button id="btnRunTextScan" class="btn btn-primary" onclick="runTextScan()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-              Run Comprehensive Scan
-            </button>
-            <button class="btn btn-secondary" onclick="clearTextInput()">Clear</button>
-          </div>
-        </div>
+  </div>
 
-        <!-- Results Component -->
-        <div id="textResultsContainer" class="results-container">
-          <!-- Verdict Banner -->
-          <div id="textVerdictBanner" class="verdict-banner safe">
-            <div class="verdict-left">
-              <div class="verdict-icon" id="textVerdictIcon">&check;</div>
-              <div>
-                <div class="verdict-title" id="textVerdictTitle">SAFE INPUT</div>
-                <div class="verdict-sub" id="textVerdictSub">No malicious pattern detected by configured detection engines.</div>
-              </div>
-            </div>
-            <div>
-              <span id="textRiskPill" class="pill pill-safe">RISK: NONE</span>
-            </div>
-          </div>
 
-          <!-- 4-Stage Rule Analysis Grid -->
-          <div class="card-title">Stage-by-Stage Verification Breakdown</div>
-          <div class="stages-grid" id="textStagesGrid">
-            <!-- Dynamically populated -->
-          </div>
+  <!-- FOOTER -->
 
-          <!-- Why This Result? Visual Decision Flow -->
-          <div class="why-result-card">
-            <div class="card-title">
-              <span>Why This Result? — Decision Logic Formulation</span>
-              <span class="pill pill-info">Priority Arbitration Policy</span>
-            </div>
-            <div id="textDecisionFlow">
-              <!-- Dynamically populated -->
-            </div>
-          </div>
-        </div>
-      </section>
+  <div class="footer">
 
-      <!-- ==================================================== -->
-      <!-- VIEW 3: URL SCANNER -->
-      <!-- ==================================================== -->
-      <section id="view-url-scanner" class="view-panel">
-        <div class="section-header">
-          <h1>URL & Query Parameter Scanner</h1>
-          <p>Statically dissects URLs, query strings, and path segments to identify injection vulnerabilities and directory jumps.</p>
-        </div>
+    <span>
+      v1.1 · hybrid detection
+    </span>
 
-        <div class="card">
-          <div class="card-title">Example URL Vectors</div>
-          <div class="sample-chips-row">
-            <span class="chip" onclick="loadUrlSample('safe')">Clean Search Query</span>
-            <span class="chip" onclick="loadUrlSample('sqli')">SQLi in Query: ?id=10 OR 1=1</span>
-            <span class="chip" onclick="loadUrlSample('traversal')">Path Traversal: ?file=../../etc/passwd</span>
-            <span class="chip" onclick="loadUrlSample('xss')">XSS in Param: ?q=&lt;script&gt;alert(1)&lt;/script&gt;</span>
-          </div>
+    <span id="clock">
+      --:--:--
+    </span>
 
-          <div class="form-group">
-            <label class="form-label" for="urlScanInput">Target URL to Inspect</label>
-            <input type="text" id="urlScanInput" class="input-text" placeholder="https://example.com/api/search?q=laptops&id=10">
-          </div>
+  </div>
 
-          <div style="display:flex;gap:12px;">
-            <button id="btnRunUrlScan" class="btn btn-primary" onclick="runUrlScan()">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              Scan URL Structure
-            </button>
-            <button class="btn btn-secondary" onclick="document.getElementById('urlScanInput').value=''">Clear</button>
-          </div>
-        </div>
+</div>
 
-        <!-- URL Results -->
-        <div id="urlResultsContainer" class="results-container">
-          <div id="urlVerdictBanner" class="verdict-banner safe">
-            <div class="verdict-left">
-              <div class="verdict-icon" id="urlVerdictIcon">&check;</div>
-              <div>
-                <div class="verdict-title" id="urlVerdictTitle">SAFE URL</div>
-                <div class="verdict-sub" id="urlVerdictSub">No malicious parameters or traversal paths detected.</div>
-              </div>
-            </div>
-            <div>
-              <span id="urlRiskPill" class="pill pill-safe">RISK: NONE</span>
-            </div>
-          </div>
 
-          <div class="card">
-            <div class="card-title">URL Breakdown & Extracted Components</div>
-            <div id="urlComponentsBox" style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;"></div>
+<script>
 
-            <div class="card-title">Parameter-Level Security Diagnostics</div>
-            <div id="urlParamsDiagnostics"></div>
-          </div>
-        </div>
-      </section>
+  // =========================================================
+  // CLOCK
+  // =========================================================
 
-      <!-- ==================================================== -->
-      <!-- VIEW 4: API SCANNER -->
-      <!-- ==================================================== -->
-      <section id="view-api-scanner" class="view-panel">
-        <div class="section-header">
-          <h1>API Request Static Inspector</h1>
-          <p>Inspects API routes, HTTP methods, headers, and request body JSON payloads for malicious injections without dispatching network calls.</p>
-        </div>
+  function tickClock() {
+    const el = document.getElementById('clock');
 
-        <div class="card">
-          <div class="card-title">API Preset Templates</div>
-          <div class="sample-chips-row">
-            <span class="chip" onclick="loadApiSample('safe')">Safe GET /products</span>
-            <span class="chip" onclick="loadApiSample('sqli')">Malicious POST /auth (SQLi in Body)</span>
-            <span class="chip" onclick="loadApiSample('traversal')">Malicious GET /download (Path Traversal)</span>
-          </div>
-
-          <div style="display:grid;grid-template-columns: 120px 1fr;gap:12px;margin-bottom:14px;">
-            <div>
-              <label class="form-label">Method</label>
-              <select id="apiMethodSelect" class="select-input">
-                <option value="GET">GET</option>
-                <option value="POST" selected>POST</option>
-                <option value="PUT">PUT</option>
-                <option value="DELETE">DELETE</option>
-                <option value="PATCH">PATCH</option>
-              </select>
-            </div>
-            <div>
-              <label class="form-label">Endpoint Route / URL</label>
-              <input type="text" id="apiEndpointInput" class="input-text" value="https://api.securecorp.internal/v1/auth/login">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">HTTP Request Headers (JSON or Key: Value)</label>
-            <input type="text" id="apiHeadersInput" class="input-text" value='{"Content-Type": "application/json", "Authorization": "Bearer token123"}'>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Request Body (JSON / Form Data)</label>
-            <textarea id="apiBodyInput" class="textarea-input" placeholder='{"username": "admin'\'' OR 1=1 --", "password": "secret"}' style="min-height:90px;">{"username": "admin' OR 1=1 --", "password": "secret"}</textarea>
-          </div>
-
-          <button id="btnRunApiScan" class="btn btn-primary" onclick="runApiScan()">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-            Inspect API Request Safely
-          </button>
-        </div>
-
-        <!-- API Results Container -->
-        <div id="apiResultsContainer" class="results-container">
-          <div id="apiVerdictBanner" class="verdict-banner safe">
-            <div class="verdict-left">
-              <div class="verdict-icon" id="apiVerdictIcon">&check;</div>
-              <div>
-                <div class="verdict-title" id="apiVerdictTitle">SAFE REQUEST</div>
-                <div class="verdict-sub" id="apiVerdictSub">API request validated clean across endpoint, headers, and body.</div>
-              </div>
-            </div>
-            <div>
-              <span id="apiRiskPill" class="pill pill-safe">RISK: NONE</span>
-            </div>
-          </div>
-
-          <div class="card">
-            <div class="card-title">Static Inspection Telemetry</div>
-            <div id="apiDetailsBox"></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================================================== -->
-      <!-- VIEW 5: DETECTION HISTORY -->
-      <!-- ==================================================== -->
-      <section id="view-history" class="view-panel">
-        <div class="section-header">
-          <h1>Persistent Detection History</h1>
-          <p>Auditable scan logs stored persistently in local SQLite (<code>backend/detection_history.db</code>).</p>
-        </div>
-
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;">
-            <div style="display:flex;gap:10px;flex:1;">
-              <input type="text" id="historySearchInput" class="input-text" placeholder="Search by payload text, threat type, or ID..." style="max-width:320px;" oninput="fetchHistoryData()">
-              <select id="historyVerdictFilter" class="select-input" style="max-width:140px;" onchange="fetchHistoryData()">
-                <option value="All">All Verdicts</option>
-                <option value="Safe">Safe Only</option>
-                <option value="Malicious">Malicious Only</option>
-              </select>
-            </div>
-            <div style="display:flex;gap:8px;">
-              <button class="btn btn-secondary btn-sm" onclick="fetchHistoryData()">Refresh</button>
-              <button class="btn btn-danger btn-sm" onclick="clearAllHistoryData()">Clear History</button>
-            </div>
-          </div>
-
-          <div class="data-table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Timestamp</th>
-                  <th>Input Type</th>
-                  <th>Payload Preview</th>
-                  <th>Verdict</th>
-                  <th>Stages Triggered</th>
-                  <th style="text-align:center;">Action</th>
-                </tr>
-              </thead>
-              <tbody id="historyTableBody">
-                <tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">Loading database records...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================================================== -->
-      <!-- VIEW 6: REGEX ANALYZER -->
-      <!-- ==================================================== -->
-      <section id="view-regex-analyzer" class="view-panel">
-        <div class="section-header">
-          <h1>Regex Pattern Analyzer (Chomsky Type 3)</h1>
-          <p>Evaluates input strings against formal regular expression languages with anchored word boundaries.</p>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Live Pattern Sandbox</div>
-          <div class="form-group">
-            <label class="form-label">Test Input Against Compiled Regexes</label>
-            <input type="text" id="regexTestInput" class="input-text" placeholder="Type pattern to test, e.g., ' UNION SELECT or <script>
-  // SIGNAL In-Memory Session Telemetry (Compatible with Restored Original Backend)
-  const sessionScans = [
-    { id: 1, timestamp: new Date().toLocaleTimeString(), type: 'Text Input', preview: 'normal user login request', result: 'Safe', risk_level: 'None', stages: { regex: false, dfa: false, cfg: false, ml: false } }
-  ];
-
-  let dfaCatalog = [
-    {
-      name: 'SQL Comment DFA',
-      description: 'Recognizes SQL comment syntax (-- or /*...*/) used to truncate query logic.',
-      states: ['q0', 'q_dash1', 'q_accept_dash', 'q_slash', 'q_in_comment', 'q_star', 'q_accept_block'],
-      start_state: 'q0',
-      accept_states: ['q_accept_dash', 'q_accept_block']
-    },
-    {
-      name: 'HTML Script Tag DFA',
-      description: 'Recognizes opening tag sequence <script.',
-      states: ['q0', 'q_lt', 'q_s', 'q_c', 'q_r', 'q_i', 'q_p', 'q_accept'],
-      start_state: 'q0',
-      accept_states: ['q_accept']
-    },
-    {
-      name: 'Path Traversal DFA',
-      description: "Recognizes directory escape patterns ('../' or '..\\').",
-      states: ['q0', 'q_dot1', 'q_dot2', 'q_accept'],
-      start_state: 'q0',
-      accept_states: ['q_accept']
-    },
-    {
-      name: 'SQL OR-Tautology DFA',
-      description: "Recognizes SQL 'OR' clause injection chained into tautological comparison.",
-      states: ['q0', 'q_o', 'q_r', 'q_accept'],
-      start_state: 'q0',
-      accept_states: ['q_accept']
-    }
-  ];
-
-  const REGEX_CATALOG_DATA = [
-    { id: 'SQLI_UNION', category: 'SQL Injection', description: 'Detects UNION SELECT query concatenation', safe_example: 'SELECT id FROM products', suspicious_example: "' UNION SELECT username, password FROM users --" },
-    { id: 'SQLI_OR_1_1', category: 'SQL Injection', description: 'Detects always-true boolean tautology bypass', safe_example: 'search item 10', suspicious_example: "admin' OR 1=1" },
-    { id: 'XSS_SCRIPT', category: 'Cross-Site Scripting', description: 'Detects HTML script tag blocks', safe_example: 'read the theatrical script', suspicious_example: '<script>alert(1)</script>' },
-    { id: 'XSS_EVENT', category: 'Cross-Site Scripting', description: 'Detects inline DOM event handlers (onerror, onload)', safe_example: 'click button', suspicious_example: '<img src=x onerror=alert(1)>' },
-    { id: 'PATH_TRAVERSAL', category: 'Path Traversal', description: 'Detects relative directory jumps (../ or ..\\)', safe_example: '/images/photo.png', suspicious_example: '../../etc/passwd' },
-    { id: 'COMMAND_INJECTION', category: 'Command Injection', description: 'Detects shell command chaining operators (; | &&)', safe_example: 'apple; orange', suspicious_example: '; cat /etc/passwd' }
-  ];
-
-  let dfaTraceData = [];
-  let currentDfaStep = 0;
-  let dfaPlayInterval = null;
-
-  function safeString(v) { return v === null || v === undefined ? '' : String(v); }
-  function escapeHtml(s) {
-    if (!s) return '';
-    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-
-  function addSessionScan(item) {
-    sessionScans.unshift({
-      id: sessionScans.length + 1,
-      timestamp: new Date().toLocaleTimeString(),
-      type: item.type || 'Text Input',
-      preview: item.preview || '',
-      full: item.full || item.preview || '',
-      result: item.result || 'Safe',
-      risk_level: item.result === 'Malicious' ? 'High' : 'None',
-      stages: item.stages || {}
-    });
-    updateOverviewCards();
-    fetchHistoryData();
-  }
-
-  function updateOverviewCards() {
-    const total = sessionScans.length;
-    const safe = sessionScans.filter(s => s.result === 'Safe').length;
-    const mal = sessionScans.filter(s => s.result === 'Malicious').length;
-    const threatRate = total > 0 ? ((mal / total) * 100).toFixed(1) + '%' : '0%';
-    const safeRate = total > 0 ? ((safe / total) * 100).toFixed(1) + '%' : '0%';
-
-    const elTotal = document.getElementById('statTotalScans');
-    const elSafe = document.getElementById('statSafeCount');
-    const elMal = document.getElementById('statThreatCount');
-    const elSafeRate = document.getElementById('statSafeRate');
-    const elThreatRate = document.getElementById('statThreatRate');
-
-    if (elTotal) elTotal.textContent = total;
-    if (elSafe) elSafe.textContent = safe;
-    if (elMal) elMal.textContent = mal;
-    if (elSafeRate) elSafeRate.textContent = safeRate;
-    if (elThreatRate) elThreatRate.textContent = threatRate;
-
-    let reg = 0, dfa = 0, cfg = 0, ml = 0;
-    sessionScans.forEach(s => {
-      if (s.stages?.regex) reg++;
-      if (s.stages?.dfa) dfa++;
-      if (s.stages?.cfg) cfg++;
-      if (s.stages?.ml) ml++;
-    });
-
-    const elReg = document.getElementById('stageDistRegex');
-    const elDfa = document.getElementById('stageDistDfa');
-    const elCfg = document.getElementById('stageDistCfg');
-    const elMl = document.getElementById('stageDistMl');
-
-    if (elReg) elReg.textContent = reg;
-    if (elDfa) elDfa.textContent = dfa;
-    if (elCfg) elCfg.textContent = cfg;
-    if (elMl) elMl.textContent = ml;
-
-    const maxVal = Math.max(reg, dfa, cfg, ml, 1);
-    const bReg = document.getElementById('barStageRegex');
-    const bDfa = document.getElementById('barStageDfa');
-    const bCfg = document.getElementById('barStageCfg');
-    const bMl = document.getElementById('barStageMl');
-
-    if (bReg) bReg.style.width = Math.min(100, (reg / maxVal) * 100) + '%';
-    if (bDfa) bDfa.style.width = Math.min(100, (dfa / maxVal) * 100) + '%';
-    if (bCfg) bCfg.style.width = Math.min(100, (cfg / maxVal) * 100) + '%';
-    if (bMl) bMl.style.width = Math.min(100, (ml / maxVal) * 100) + '%';
-
-    const tbody = document.getElementById('overviewRecentActivityBody');
-    if (tbody) {
-      tbody.innerHTML = sessionScans.slice(0, 5).map(r => `
-        <tr>
-          <td>${escapeHtml(r.timestamp)}</td>
-          <td><span class="pill pill-neutral">${escapeHtml(r.type)}</span></td>
-          <td><code>${escapeHtml(r.preview)}</code></td>
-          <td><span class="pill ${r.result === 'Malicious' ? 'pill-danger' : 'pill-safe'}">${escapeHtml(r.result)}</span></td>
-        </tr>
-      `).join('');
-    }
-  }
-
-  // Navigation switcher
-  function switchView(viewId) {
-    document.querySelectorAll('.view-panel').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-    const targetView = document.getElementById('view-' + viewId);
-    if (targetView) targetView.classList.add('active');
-
-    const navItems = document.querySelectorAll('.nav-item');
-    navItems.forEach(item => {
-      if (item.getAttribute('onclick')?.includes(viewId)) {
-        item.classList.add('active');
-      }
-    });
-
-    const titles = {
-      'overview': 'Overview Dashboard',
-      'text-scanner': 'Text Input Scanner',
-      'url-scanner': 'URL & Query Parameter Scanner',
-      'api-scanner': 'API Request Static Inspector',
-      'history': 'Detection History',
-      'regex-analyzer': 'Regex Pattern Analyzer',
-      'dfa-visualizer': 'DFA Automata Visualizer',
-      'grammar-analyzer': 'Grammar Analyzer (CFG)',
-      'machine-learning': 'Machine Learning Metrics',
-      'about': 'System Architecture & About'
-    };
-    document.getElementById('breadcrumbTitle').textContent = titles[viewId] || 'Dashboard';
-
-    if (viewId === 'overview') updateOverviewCards();
-    if (viewId === 'history') fetchHistoryData();
-    if (viewId === 'regex-analyzer') loadRegexCatalog();
-    if (viewId === 'dfa-visualizer') loadDfaCatalog();
-  }
-
-  function updateCharCount() {
-    const text = document.getElementById('textScanInput').value;
-    document.getElementById('charCount').textContent = text.length + ' characters';
-  }
-
-  function clearTextInput() {
-    document.getElementById('textScanInput').value = '';
-    updateCharCount();
-    document.getElementById('textResultsContainer').classList.remove('show');
-  }
-
-  // 1. Overview Telemetry
-  function loadOverviewStats() {
-    updateOverviewCards();
-  }
-
-  // 2. Text Scanner
-  function loadTextSample(key) {
-    const samples = {
-      'normal': 'normal user login request',
-      'sqli_tautology': "admin' OR 1=1 --",
-      'sqli_union': "' UNION SELECT null, username, password FROM users --",
-      'xss_script': '<script>alert(1)</script>',
-      'xss_onerror': '<img src=x onerror=alert(document.cookie)>',
-      'traversal': '../../etc/passwd',
-      'command': '; cat /etc/passwd | whoami',
-      'num7': '7'
-    };
-    document.getElementById('textScanInput').value = samples[key] || '';
-    updateCharCount();
-    runTextScan();
-  }
-
-  async function runTextScan() {
-    const text = document.getElementById('textScanInput').value.trim();
-    if (!text) return;
-
-    const btn = document.getElementById('btnRunTextScan');
-    btn.disabled = true;
-    btn.textContent = 'Scanning...';
-
-    try {
-      const res = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
+    el.textContent =
+      new Date().toLocaleTimeString('en-GB', {
+        hour12: false
       });
-      const data = await res.json();
-      displayTextResults(data);
-    } catch (e) {
-      alert('Scan error: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg> Run Comprehensive Scan`;
+  }
+
+  tickClock();
+
+  setInterval(tickClock, 1000);
+
+
+  // =========================================================
+  // INPUT ELEMENTS
+  // =========================================================
+
+  const inputText =
+    document.getElementById('inputText');
+
+  const inputShell =
+    document.getElementById('inputShell');
+
+  const charCount =
+    document.getElementById('charCount');
+
+  const scanline =
+    document.getElementById('scanline');
+
+  const scanBtn =
+    document.getElementById('scanBtn');
+
+  const resultPanel =
+    document.getElementById('resultPanel');
+
+  const badge =
+    document.getElementById('badge');
+
+  const rTitle =
+    document.getElementById('rTitle');
+
+  const rBody =
+    document.getElementById('rBody');
+
+  const verdictLabel =
+    document.getElementById('verdictLabel');
+
+  const ampReadout =
+    document.getElementById('ampReadout');
+
+  const sampleReadout =
+    document.getElementById('sampleReadout');
+
+  const modeReadout =
+    document.getElementById('modeReadout');
+
+
+  // =========================================================
+  // INPUT EVENTS
+  // =========================================================
+
+  inputText.addEventListener(
+    'focus',
+    () => {
+      inputShell.classList.add('focused');
     }
-  }
+  );
 
-  function displayTextResults(raw) {
-    const data = (raw && typeof raw.result === 'object' && raw.result !== null) ? raw.result : raw;
-    const container = document.getElementById('textResultsContainer');
-    container.classList.add('show');
 
-    const isMal = safeString(data.result).toLowerCase().includes('malicious');
-    const banner = document.getElementById('textVerdictBanner');
-    banner.className = 'verdict-banner ' + (isMal ? 'danger' : 'safe');
-
-    document.getElementById('textVerdictIcon').innerHTML = isMal ? '&#9888;' : '&check;';
-    document.getElementById('textVerdictTitle').textContent = isMal ? 'MALICIOUS INPUT DETECTED' : 'SAFE INPUT (CLEAN)';
-    document.getElementById('textVerdictSub').textContent = isMal ? 'Interception triggered by restored detection engine.' : 'Passed all 4 configured detection stages.';
-
-    const riskPill = document.getElementById('textRiskPill');
-    riskPill.className = 'pill ' + (isMal ? 'pill-danger' : 'pill-safe');
-    riskPill.textContent = 'VERDICT: ' + safeString(data.result).toUpperCase();
-
-    // Render 4 Stage Cards from restored backend stages
-    const stagesGrid = document.getElementById('textStagesGrid');
-    const st = data.stages || {};
-    const analyses = [
-      {
-        concept: 'Stage 1: Regex Matching',
-        status: st.regex ? 'Triggered' : 'Passed',
-        checks: 'Checks input against pre-compiled regular expressions for SQLi, XSS, Path Traversal, and Command Injection.',
-        observed: st.regex ? 'Input matched known malicious attack pattern.' : 'No configured malicious regular expression matched.',
-        contribution: st.regex ? 'Directly triggers malicious verdict under Logical OR rule.' : 'Cleared Stage 1.'
-      },
-      {
-        concept: 'Stage 2: DFA Analysis',
-        status: st.dfa ? 'Triggered' : 'Passed',
-        checks: 'Processes string through deterministic finite state machines (UNION SELECT, <script, ;command, OR 1=1).',
-        observed: st.dfa ? 'Input reached accepting state in finite state machine.' : 'Automaton completed in non-accepting state.',
-        contribution: st.dfa ? 'Automaton accepted malicious sequence.' : 'Cleared Stage 2.'
-      },
-      {
-        concept: 'Stage 3: Grammar Analysis (CFG)',
-        status: st.cfg ? 'Triggered' : 'Passed',
-        checks: 'Context-free grammar tokenization and derivation rules.',
-        observed: st.cfg ? 'Input derived malicious structured grammar production.' : 'No malicious production recognized.',
-        contribution: st.cfg ? 'Grammar parser derived attack clause.' : 'Cleared Stage 3.'
-      },
-      {
-        concept: 'Stage 4: Machine Learning (MultinomialNB)',
-        status: st.ml ? 'Malicious' : 'Safe',
-        checks: 'Original Multinomial Naive Bayes model evaluating TF-IDF feature vector.',
-        observed: st.ml ? 'Statistical classifier predicted malicious class (1).' : 'Statistical classifier predicted safe class (0).',
-        contribution: st.ml ? 'Statistical prediction contributed to final classification.' : 'Cleared Stage 4.'
-      }
-    ];
-
-    stagesGrid.innerHTML = analyses.map(item => {
-      const isTriggered = item.status === 'Triggered' || item.status === 'Malicious';
-      return `
-        <div class="stage-card ${isTriggered ? 'triggered' : 'passed'}">
-          <div>
-            <div class="stage-header">
-              <span class="stage-name">${escapeHtml(item.concept)}</span>
-              <span class="stage-status ${isTriggered ? 'fail' : 'pass'}">${escapeHtml(item.status)}</span>
-            </div>
-            <div class="stage-body">
-              <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;"><b>Checks:</b> ${escapeHtml(item.checks)}</div>
-              <div><b>Observed:</b> ${escapeHtml(item.observed)}</div>
-            </div>
-          </div>
-          <div class="stage-meta">${escapeHtml(item.contribution)}</div>
-        </div>
-      `;
-    }).join('');
-
-    // Decision Flow
-    const flowDiv = document.getElementById('textDecisionFlow');
-    const flagged = [];
-    const unflagged = [];
-    if (st.regex) flagged.push('Regex'); else unflagged.push('Regex');
-    if (st.dfa) flagged.push('DFA'); else unflagged.push('DFA');
-    if (st.cfg) flagged.push('CFG'); else unflagged.push('CFG');
-    if (st.ml) flagged.push('Machine Learning'); else unflagged.push('Machine Learning');
-
-    flowDiv.innerHTML = `
-      <div class="flow-step-row">
-        <div class="step-indicator">1</div>
-        <div><b>Restored Detection Policy:</b> Logical OR combination: <code>malicious = regex or dfa or cfg or ml</code>.</div>
-      </div>
-      <div class="flow-step-row">
-        <div class="step-indicator">2</div>
-        <div><b>Flagged Stages:</b> <span style="color:${isMal ? 'var(--status-danger)' : 'var(--status-safe)'};font-weight:600;">${escapeHtml(flagged.join(', ') || 'None')}</span></div>
-      </div>
-      <div class="flow-step-row">
-        <div class="step-indicator">3</div>
-        <div><b>Primary Deciding Factor:</b> ${isMal ? `Triggered by ${flagged.join(', ')} under Logical OR policy.` : 'All 4 detection stages passed.'}</div>
-      </div>
-    `;
-
-    // Record session scan
-    addSessionScan({
-      type: 'Text Input',
-      preview: raw.input || document.getElementById('textScanInput').value,
-      result: data.result,
-      stages: data.stages
-    });
-  }
-
-  // 3. URL Scanner
-  function loadUrlSample(key) {
-    const urls = {
-      'safe': 'https://example.com/api/products?id=1024&category=laptops',
-      'sqli': 'https://example.com/api/search?id=10 OR 1=1&token=abc',
-      'traversal': 'https://example.com/download?file=../../../../etc/passwd',
-      'xss': 'https://example.com/profile?name=<script>alert(1)</script>'
-    };
-    document.getElementById('urlScanInput').value = urls[key] || '';
-    runUrlScan();
-  }
-
-  async function runUrlScan() {
-    const url = document.getElementById('urlScanInput').value.trim();
-    if (!url) return;
-
-    const btn = document.getElementById('btnRunUrlScan');
-    btn.disabled = true;
-    btn.textContent = 'Scanning...';
-
-    try {
-      const res = await fetch('/scan-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: url })
-      });
-      const data = await res.json();
-      displayUrlResults(data);
-    } catch (e) {
-      alert('URL Scan error: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Scan URL Structure';
+  inputText.addEventListener(
+    'blur',
+    () => {
+      inputShell.classList.remove('focused');
     }
-  }
+  );
 
-  function displayUrlResults(data) {
-    const container = document.getElementById('urlResultsContainer');
-    container.classList.add('show');
 
-    const isMal = safeString(data.result).toLowerCase().includes('malicious');
-    const banner = document.getElementById('urlVerdictBanner');
-    banner.className = 'verdict-banner ' + (isMal ? 'danger' : 'safe');
+  inputText.addEventListener(
+    'input',
+    () => {
 
-    document.getElementById('urlVerdictIcon').innerHTML = isMal ? '&#9888;' : '&check;';
-    document.getElementById('urlVerdictTitle').textContent = isMal ? 'MALICIOUS URL DETECTED' : 'SAFE URL';
-    document.getElementById('urlVerdictSub').textContent = isMal ? 'Malicious injection pattern detected in path or parameters.' : 'All query parameters and path segments validated clean.';
+      const n =
+        inputText.value.length;
 
-    const riskPill = document.getElementById('urlRiskPill');
-    riskPill.className = 'pill ' + (isMal ? 'pill-danger' : 'pill-safe');
-    riskPill.textContent = 'VERDICT: ' + safeString(data.result).toUpperCase();
-
-    let comps = {};
-    try {
-      const u = new URL(data.url.startsWith('http') ? data.url : 'http://' + data.url);
-      comps = { scheme: u.protocol.replace(':', ''), hostname: u.hostname, path: u.pathname };
-    } catch(e) {
-      comps = { scheme: 'http', hostname: 'N/A', path: data.url };
+      charCount.textContent =
+        n +
+        (n === 1
+          ? ' character'
+          : ' characters');
     }
+  );
 
-    document.getElementById('urlComponentsBox').innerHTML = `
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px;">
-        <span style="font-weight:600;">Scheme:</span> <code>${escapeHtml(comps.scheme || 'http')}</code>
-        <span style="font-weight:600;">Hostname:</span> <code>${escapeHtml(comps.hostname || 'None')}</code>
-        <span style="font-weight:600;">Path:</span> <code>${escapeHtml(comps.path || '/')}</code>
-      </div>
-    `;
 
-    const paramsDiv = document.getElementById('urlParamsDiagnostics');
-    const pa = data.parameters || {};
-    const keys = Object.keys(pa);
+  inputText.addEventListener(
+    'keydown',
+    (e) => {
 
-    if (keys.length === 0) {
-      paramsDiv.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No query parameters in target URL.</div>';
-    } else {
-      paramsDiv.innerHTML = keys.map(k => {
-        const list = pa[k] || [];
-        const isSusp = list.some(item => (item.result?.result === 'Malicious' || item.result === 'Malicious'));
-        return `
-          <div style="background:var(--bg-card-subtle);padding:10px 14px;border-radius:8px;border:1px solid ${isSusp ? 'var(--status-danger-border)' : 'var(--border-subtle)'};margin-bottom:8px;">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-              <span style="font-family:var(--font-mono);font-weight:700;color:${isSusp ? 'var(--status-danger)' : 'var(--status-safe)'};">Parameter: ${escapeHtml(k)}</span>
-              <span class="pill ${isSusp ? 'pill-danger' : 'pill-safe'}">${isSusp ? 'THREAT DETECTED' : 'PASS'}</span>
-            </div>
-            ${list.map(item => {
-              const resVal = typeof item.result === 'object' ? item.result.result : item.result;
-              return `
-                <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">
-                  <b>Value:</b> <code>${escapeHtml(item.value || '')}</code> &bull; Status: <span style="font-weight:600;color:${resVal === 'Malicious' ? 'var(--status-danger)' : 'var(--status-safe)'};">${resVal}</span>
-                </div>
-              `;
-            }).join('')}
-          </div>
-        `;
-      }).join('');
-    }
+      if (
+        (e.ctrlKey || e.metaKey) &&
+        e.key === 'Enter'
+      ) {
 
-    addSessionScan({
-      type: 'URL Scan',
-      preview: data.url,
-      result: data.result,
-      stages: data.stages
-    });
-  }
+        checkInput();
 
-  // 4. API Scanner (Evaluated Safely via Restored /predict)
-  function loadApiSample(type) {
-    if (type === 'safe') {
-      document.getElementById('apiMethodSelect').value = 'GET';
-      document.getElementById('apiEndpointInput').value = 'https://api.example.com/v1/products?id=10&page=1';
-      document.getElementById('apiHeadersInput').value = '{"Authorization": "Bearer token123"}';
-      document.getElementById('apiBodyInput').value = '';
-    } else if (type === 'sqli') {
-      document.getElementById('apiMethodSelect').value = 'POST';
-      document.getElementById('apiEndpointInput').value = 'https://api.example.com/v1/auth/login';
-      document.getElementById('apiHeadersInput').value = '{"Content-Type": "application/json"}';
-      document.getElementById('apiBodyInput').value = '{"username": "admin\' OR 1=1 --", "password": "secret"}';
-    } else if (type === 'traversal') {
-      document.getElementById('apiMethodSelect').value = 'GET';
-      document.getElementById('apiEndpointInput').value = 'https://api.example.com/v1/files/download?file=../../../../etc/passwd';
-      document.getElementById('apiHeadersInput').value = '{}';
-      document.getElementById('apiBodyInput').value = '';
-    }
-    runApiScan();
-  }
-
-  async function runApiScan() {
-    const endpoint = document.getElementById('apiEndpointInput').value.trim();
-    const method = document.getElementById('apiMethodSelect').value;
-    const headers = document.getElementById('apiHeadersInput').value.trim();
-    const body = document.getElementById('apiBodyInput').value.trim();
-
-    if (!endpoint) return;
-
-    const btn = document.getElementById('btnRunApiScan');
-    btn.disabled = true;
-    btn.textContent = 'Scanning...';
-
-    try {
-      // 1. Scan endpoint URL with /scan-url
-      let endpointRes = { result: 'Safe', stages: { regex: false, dfa: false, cfg: false, ml: false } };
-      try {
-        const uRes = await fetch('/scan-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: endpoint })
-        });
-        endpointRes = await uRes.json();
-      } catch(e) {}
-
-      // 2. Scan body with /predict
-      let bodyRes = null;
-      if (body) {
-        try {
-          const bRes = await fetch('/predict', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: body })
-          });
-          const bData = await bRes.json();
-          bodyRes = (bData && typeof bData.result === 'object') ? bData.result : bData;
-        } catch(e) {}
       }
 
-      const isEndpointMal = endpointRes.result === 'Malicious';
-      const isBodyMal = bodyRes && (bodyRes.result === 'Malicious');
-      const isMal = isEndpointMal || isBodyMal;
+    }
+  );
 
-      const mergedStages = {
-        regex: (endpointRes.stages?.regex || bodyRes?.stages?.regex || false),
-        dfa: (endpointRes.stages?.dfa || bodyRes?.stages?.dfa || false),
-        cfg: (endpointRes.stages?.cfg || bodyRes?.stages?.cfg || false),
-        ml: (endpointRes.stages?.ml || bodyRes?.stages?.ml || false)
+
+  // =========================================================
+  // WAVEFORM
+  // =========================================================
+
+  const canvas =
+    document.getElementById('wave');
+
+  const ctx =
+    canvas.getContext('2d');
+
+
+  const NUM_BARS = 56;
+
+  let bars =
+    new Array(NUM_BARS).fill(0.06);
+
+  let targetBars =
+    new Array(NUM_BARS).fill(0.06);
+
+  let mode = 'idle';
+
+  let colorMix = {
+    r: 79,
+    g: 168,
+    b: 255
+  };
+
+  let sampleCount = 0;
+
+  let frameCount = 0;
+
+
+  function resizeCanvas() {
+
+    const rect =
+      canvas.getBoundingClientRect();
+
+    const dpr =
+      window.devicePixelRatio || 1;
+
+    canvas.width =
+      rect.width * dpr;
+
+    canvas.height =
+      rect.height * dpr;
+
+    ctx.setTransform(
+      dpr,
+      0,
+      0,
+      dpr,
+      0,
+      0
+    );
+  }
+
+
+  window.addEventListener(
+    'resize',
+    resizeCanvas
+  );
+
+
+  function setMode(newMode) {
+
+    mode = newMode;
+
+
+    if (mode === 'idle') {
+
+      colorMix = {
+        r: 51,
+        g: 69,
+        b: 94
       };
 
-      displayApiResults({
-        endpoint: endpoint,
-        http_method: method,
-        result: isMal ? 'Malicious' : 'Safe',
-        risk_level: isMal ? 'High' : 'None',
-        explanation: isMal ? 'Restored detection pipeline intercepted malicious injection pattern in API request payload.' : 'All API components validated clean through restored detection engines.',
-        stages: mergedStages,
-        suspicious_items: isBodyMal ? ['Request Body Payload'] : (isEndpointMal ? ['Endpoint Parameters'] : []),
-        body_analysis: body ? [{ field: 'request_body', value: body.length > 60 ? body.substring(0, 58) + '...' : body, result: isBodyMal ? 'Malicious' : 'Safe' }] : []
-      });
+      modeReadout.textContent =
+        'STANDBY';
 
-      addSessionScan({
-        type: 'API Request',
-        preview: `${method} ${endpoint}`,
-        result: isMal ? 'Malicious' : 'Safe',
-        stages: mergedStages
-      });
-    } catch (e) {
-      alert('API Scan error: ' + e.message);
-    } finally {
-      btn.disabled = false;
-      btn.textContent = 'Inspect API Request Safely';
     }
+
+
+    else if (mode === 'scanning') {
+
+      colorMix = {
+        r: 79,
+        g: 168,
+        b: 255
+      };
+
+      modeReadout.textContent =
+        'SCANNING';
+
+    }
+
+
+    else if (mode === 'safe') {
+
+      colorMix = {
+        r: 53,
+        g: 211,
+        b: 153
+      };
+
+      modeReadout.textContent =
+        'CLEAR';
+
+    }
+
+
+    else if (mode === 'danger') {
+
+      colorMix = {
+        r: 255,
+        g: 77,
+        b: 109
+      };
+
+      modeReadout.textContent =
+        'ALERT';
+
+    }
+
+
+    else if (mode === 'error') {
+
+      colorMix = {
+        r: 255,
+        g: 180,
+        b: 84
+      };
+
+      modeReadout.textContent =
+        'ERROR';
+
+    }
+
   }
 
-  function displayApiResults(data) {
-    const container = document.getElementById('apiResultsContainer');
-    container.classList.add('show');
 
-    const isMal = safeString(data.result).toLowerCase().includes('malicious');
-    const banner = document.getElementById('apiVerdictBanner');
-    banner.className = 'verdict-banner ' + (isMal ? 'danger' : 'safe');
+  function randomizeTargets(amplitudeScale) {
 
-    document.getElementById('apiVerdictIcon').innerHTML = isMal ? '&#9888;' : '&check;';
-    document.getElementById('apiVerdictTitle').textContent = isMal ? 'MALICIOUS API REQUEST DETECTED' : 'SAFE API REQUEST';
-    document.getElementById('apiVerdictSub').textContent = data.explanation || 'Clean API specification.';
+    for (
+      let i = 0;
+      i < NUM_BARS;
+      i++
+    ) {
 
-    const riskPill = document.getElementById('apiRiskPill');
-    riskPill.className = 'pill ' + (isMal ? 'pill-danger' : 'pill-safe');
-    riskPill.textContent = 'VERDICT: ' + safeString(data.result).toUpperCase();
+      const envelope =
+        0.35 +
+        0.65 *
+        Math.sin(
+          (i / NUM_BARS) *
+          Math.PI
+        );
 
-    let detailsHtml = `
-      <div style="margin-bottom:8px;"><b>Endpoint:</b> <code>${escapeHtml(data.endpoint)}</code> [${escapeHtml(data.http_method)}]</div>
+      targetBars[i] =
+        Math.max(
+          0.04,
+          Math.random() *
+          amplitudeScale *
+          envelope
+        );
+
+    }
+
+  }
+
+
+  function roundRect(
+    ctx,
+    x,
+    y,
+    w,
+    h,
+    r
+  ) {
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      x + r,
+      y
+    );
+
+    ctx.arcTo(
+      x + w,
+      y,
+      x + w,
+      y + h,
+      r
+    );
+
+    ctx.arcTo(
+      x + w,
+      y + h,
+      x,
+      y + h,
+      r
+    );
+
+    ctx.arcTo(
+      x,
+      y + h,
+      x,
+      y,
+      r
+    );
+
+    ctx.arcTo(
+      x,
+      y,
+      x + w,
+      y,
+      r
+    );
+
+    ctx.closePath();
+  }
+
+
+  function drawWave() {
+
+    const w =
+      canvas.getBoundingClientRect().width;
+
+    const h =
+      canvas.getBoundingClientRect().height;
+
+    ctx.clearRect(
+      0,
+      0,
+      w,
+      h
+    );
+
+
+    const gap = 3;
+
+    const barWidth =
+      (
+        w -
+        gap *
+        (NUM_BARS - 1)
+      ) /
+      NUM_BARS;
+
+    const midY =
+      h / 2;
+
+    let totalAmp = 0;
+
+
+    for (
+      let i = 0;
+      i < NUM_BARS;
+      i++
+    ) {
+
+      bars[i] +=
+        (
+          targetBars[i] -
+          bars[i]
+        ) * 0.12;
+
+      totalAmp +=
+        bars[i];
+
+
+      const barH =
+        Math.max(
+          2,
+          bars[i] *
+          h *
+          0.9
+        );
+
+
+      const x =
+        i *
+        (
+          barWidth +
+          gap
+        );
+
+      const y =
+        midY -
+        barH / 2;
+
+
+      const alpha =
+        0.55 +
+        0.45 *
+        bars[i];
+
+
+      ctx.fillStyle =
+        `rgba(
+          ${colorMix.r},
+          ${colorMix.g},
+          ${colorMix.b},
+          ${Math.min(alpha, 1)}
+        )`;
+
+
+      roundRect(
+        ctx,
+        x,
+        y,
+        barWidth,
+        barH,
+        Math.min(
+          2,
+          barWidth / 2
+        )
+      );
+
+
+      ctx.fill();
+
+    }
+
+
+    ampReadout.textContent =
+      (
+        totalAmp /
+        NUM_BARS
+      ).toFixed(2);
+
+  }
+
+
+  function loop() {
+
+    frameCount++;
+
+
+    if (
+      mode === 'idle' &&
+      frameCount % 40 === 0
+    ) {
+
+      randomizeTargets(0.22);
+
+    }
+
+
+    else if (
+      mode === 'scanning' &&
+      frameCount % 4 === 0
+    ) {
+
+      randomizeTargets(0.9);
+
+      sampleCount +=
+        NUM_BARS;
+
+      sampleReadout.textContent =
+        sampleCount;
+
+    }
+
+
+    else if (
+      (
+        mode === 'safe' ||
+        mode === 'error'
+      ) &&
+      frameCount % 50 === 0
+    ) {
+
+      randomizeTargets(0.28);
+
+    }
+
+
+    else if (
+      mode === 'danger' &&
+      frameCount % 20 === 0
+    ) {
+
+      randomizeTargets(0.85);
+
+    }
+
+
+    drawWave();
+
+    requestAnimationFrame(loop);
+
+  }
+
+
+  resizeCanvas();
+
+  setMode('idle');
+
+  loop();
+
+
+  // =========================================================
+  // VERDICT UI
+  // =========================================================
+
+  function setVerdictLabel(
+    text,
+    tone
+  ) {
+
+    verdictLabel.textContent =
+      text;
+
+    verdictLabel.className =
+      'verdict state-' +
+      tone;
+
+  }
+
+
+  function showResult(
+    tone,
+    title,
+    body
+  ) {
+
+    resultPanel.className =
+      'result-panel show tone-' +
+      tone;
+
+    badge.className =
+      'badge tone-' +
+      tone;
+
+
+    if (tone === 'safe') {
+
+      badge.textContent = '✓';
+
+    }
+
+    else if (tone === 'danger') {
+
+      badge.textContent = '!';
+
+    }
+
+    else {
+
+      badge.textContent = '?';
+
+    }
+
+
+    rTitle.className =
+      'r-title tone-' +
+      tone;
+
+    rTitle.textContent =
+      title;
+
+    rBody.innerHTML =
+      body;
+
+  }
+
+
+  // =========================================================
+  // HTML ESCAPE
+  // =========================================================
+
+  function escapeHtml(str) {
+
+    const div =
+      document.createElement('div');
+
+    div.textContent =
+      String(str);
+
+    return div.innerHTML;
+
+  }
+
+
+  // =========================================================
+  // SHOW DETECTION STAGES
+  // =========================================================
+
+  function showStages(stages) {
+
+    if (!stages) {
+
+      return '';
+
+    }
+
+
+    const regex =
+      stages.regex ? 'Detected' : 'Clear';
+
+    const dfa =
+      stages.dfa ? 'Detected' : 'Clear';
+
+    const cfg =
+      stages.cfg ? 'Detected' : 'Clear';
+
+    const ml =
+      stages.ml ? 'Detected' : 'Clear';
+
+
+    return `
+      <br><br>
+      <b>Detection Stages</b>
+      <br>
+      Regex: ${regex}
+      &nbsp; | &nbsp;
+      DFA: ${dfa}
+      &nbsp; | &nbsp;
+      CFG: ${cfg}
+      &nbsp; | &nbsp;
+      ML: ${ml}
     `;
 
-    if (data.suspicious_items && data.suspicious_items.length > 0) {
-      detailsHtml += `<div style="color:var(--status-danger);margin-bottom:8px;"><b>Suspicious Items:</b> ${escapeHtml(data.suspicious_items.join(', '))}</div>`;
-    }
-
-    if (data.body_analysis && data.body_analysis.length > 0) {
-      detailsHtml += '<div style="font-weight:700;margin-top:10px;margin-bottom:4px;">Body Fields Inspected:</div>';
-      detailsHtml += data.body_analysis.map(b => `
-        <div style="font-family:var(--font-mono);font-size:11.5px;padding:4px 0;">
-          &bull; <code>${escapeHtml(b.field)}</code>: <span style="font-weight:600;color:${b.result === 'Malicious' ? 'var(--status-danger)' : 'var(--status-safe)'}">${b.result}</span> (${escapeHtml(b.value)})
-        </div>
-      `).join('');
-    }
-
-    document.getElementById('apiDetailsBox').innerHTML = detailsHtml;
   }
 
-  // 5. History
-  function fetchHistoryData() {
-    const search = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
-    const verdict = document.getElementById('historyVerdictFilter')?.value || 'All';
 
-    let filtered = sessionScans;
-    if (search) filtered = filtered.filter(s => s.preview.toLowerCase().includes(search) || s.type.toLowerCase().includes(search));
-    if (verdict !== 'All') filtered = filtered.filter(s => s.result === verdict);
+  // =========================================================
+  // MAIN SCAN FUNCTION
+  // =========================================================
 
-    renderHistoryTable(filtered);
-  }
+  async function checkInput() {
 
-  function renderHistoryTable(records) {
-    const tbody = document.getElementById('historyTableBody');
-    if (!tbody) return;
-    if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No scan records in current session.</td></tr>';
+    const input =
+      inputText.value.trim();
+
+
+    if (!input) {
+
+      inputShell.classList.add(
+        'focused'
+      );
+
+      inputText.focus();
+
       return;
+
     }
 
-    tbody.innerHTML = records.map(r => {
-      const isMal = safeString(r.result).toLowerCase().includes('malicious');
-      const st = r.stages || {};
-      const stStr = `${st.regex ? 'R' : '-'}/${st.dfa ? 'D' : '-'}/${st.cfg ? 'C' : '-'}/${st.ml ? 'M' : '-'}`;
 
-      return `
-        <tr>
-          <td>${escapeHtml(r.timestamp)}</td>
-          <td><span class="pill pill-neutral">${escapeHtml(r.type || 'Text')}</span></td>
-          <td><code>${escapeHtml(r.preview)}</code></td>
-          <td><span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${escapeHtml(r.result)}</span></td>
-          <td><code style="color:var(--accent-primary);">${stStr}</code></td>
-          <td style="text-align:center;">
-            <button class="btn btn-secondary btn-sm" onclick="openScanModal(${r.id})">Inspect</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteHistoryRecord(${r.id})">&times;</button>
-          </td>
-        </tr>
-      `;
-    }).join('');
-  }
+    // -------------------------------------------------------
+    // SCANNING UI
+    // -------------------------------------------------------
 
-  function openScanModal(id) {
-    const modal = document.getElementById('scanModal');
-    modal.classList.add('open');
-    const rec = sessionScans.find(s => s.id === id);
+    scanBtn.disabled = true;
 
-    if (!rec) {
-      document.getElementById('modalBody').innerHTML = 'Record not found.';
-      return;
-    }
+    scanBtn.classList.add(
+      'state-loading'
+    );
 
-    document.getElementById('modalTitle').textContent = `Scan Record #${rec.id} - ${rec.type}`;
-    document.getElementById('modalBody').innerHTML = `
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px;font-size:12.5px;margin-bottom:12px;">
-        <span style="font-weight:600;">Timestamp:</span> <div>${escapeHtml(rec.timestamp)}</div>
-        <span style="font-weight:600;">Verdict:</span> <div style="font-weight:700;color:${rec.result === 'Malicious' ? 'var(--status-danger)' : 'var(--status-safe)'};">${rec.result}</div>
-        <span style="font-weight:600;">Risk Level:</span> <div>${escapeHtml(rec.risk_level)}</div>
-      </div>
-      <div style="font-weight:700;margin-bottom:4px;font-size:12.5px;">Payload:</div>
-      <div class="code-display" style="margin-bottom:12px;max-height:140px;">${escapeHtml(rec.full || rec.preview)}</div>
-      <div style="font-weight:700;margin-bottom:4px;font-size:12.5px;">Detection Stages:</div>
-      <div style="font-size:12px;color:var(--text-secondary);background:var(--bg-card-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-subtle);">
-        Regex: <b>${rec.stages?.regex ? 'FAIL' : 'PASS'}</b> &bull;
-        DFA: <b>${rec.stages?.dfa ? 'FAIL' : 'PASS'}</b> &bull;
-        CFG: <b>${rec.stages?.cfg ? 'FAIL' : 'PASS'}</b> &bull;
-        ML: <b>${rec.stages?.ml ? 'MALICIOUS' : 'SAFE'}</b>
-      </div>
-    `;
-  }
+    scanBtn.textContent =
+      'Scanning…';
 
-  function closeScanModal() {
-    document.getElementById('scanModal').classList.remove('open');
-  }
+    scanline.classList.add(
+      'active'
+    );
 
-  function deleteHistoryRecord(id) {
-    const idx = sessionScans.findIndex(s => s.id === id);
-    if (idx !== -1) {
-      sessionScans.splice(idx, 1);
-      fetchHistoryData();
-      updateOverviewCards();
-    }
-  }
+    setMode('scanning');
 
-  function clearAllHistoryData() {
-    if (!confirm('Are you sure you want to clear session scan history?')) return;
-    sessionScans.length = 0;
-    fetchHistoryData();
-    updateOverviewCards();
-  }
+    setVerdictLabel(
+      'Analyzing',
+      'scan'
+    );
 
-  // 6. Regex Analyzer
-  function loadRegexCatalog() {
-    const tbody = document.getElementById('regexCatalogBody');
-    if (!tbody) return;
-    tbody.innerHTML = REGEX_CATALOG_DATA.map(r => `
-      <tr>
-        <td><span class="pill pill-neutral">${escapeHtml(r.id)}</span></td>
-        <td><b>${escapeHtml(r.category)}</b></td>
-        <td>${escapeHtml(r.description)}</td>
-        <td><code style="color:var(--status-safe);">${escapeHtml(r.safe_example)}</code></td>
-        <td><code style="color:var(--status-danger);">${escapeHtml(r.suspicious_example)}</code></td>
-      </tr>
-    `).join('');
-  }
+    sampleCount = 0;
 
-  async function testCustomRegex() {
-    const text = document.getElementById('regexTestInput').value;
-    if (!text) {
-      document.getElementById('regexMatchAlert').innerHTML = 'Type above to test against regex catalog.';
-      return;
-    }
+    sampleReadout.textContent =
+      '0';
+
 
     try {
-      const res = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
-      });
-      const raw = await res.json();
-      const data = (raw && typeof raw.result === 'object' && raw.result !== null) ? raw.result : raw;
-      const rMatch = data.stages?.regex;
 
-      if (rMatch) {
-        document.getElementById('regexMatchAlert').innerHTML = `
-          <span style="color:var(--status-danger);font-weight:700;">TRIGGERED:</span> Input matched a regular expression attack signature in Stage 1!
-        `;
-      } else {
-        document.getElementById('regexMatchAlert').innerHTML = `
-          <span style="color:var(--status-safe);font-weight:700;">PASSED:</span> No configured attack regexes matched this input in Stage 1.
-        `;
+      // =====================================================
+      // DETECT WHETHER INPUT IS URL/API
+      // =====================================================
+
+      const isURL =
+        /^https?:\/\//i.test(input);
+
+
+      let response;
+
+
+      // =====================================================
+      // API URL SCAN
+      // =====================================================
+
+      if (isURL) {
+
+        response =
+          await fetch(
+            "http://127.0.0.1:8000/scan-url",
+            {
+
+              method: "POST",
+
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                url: input
+              })
+
+            }
+          );
+
       }
-    } catch (e) {}
-  }
 
-  // 7. DFA Visualizer
-  function loadDfaCatalog() {
-    renderDfaCard();
-  }
 
-  function onDfaChange() {
-    renderDfaCard();
-  }
+      // =====================================================
+      // NORMAL TEXT SCAN
+      // =====================================================
 
-  function renderDfaCard() {
-    const name = document.getElementById('dfaSelect').value;
-    const dfa = dfaCatalog.find(d => d.name === name) || dfaCatalog[0];
-    if (!dfa) return;
+      else {
 
-    document.getElementById('dfaSpecs').innerHTML = `
-      <div style="display:grid;grid-template-columns:120px 1fr;gap:4px;">
-        <span style="font-weight:600;">Description:</span> <span>${escapeHtml(dfa.description)}</span>
-        <span style="font-weight:600;">States $Q$:</span> <code>{ ${escapeHtml(dfa.states.join(', '))} }</code>
-        <span style="font-weight:600;">Start State $q_0$:</span> <code>${escapeHtml(dfa.start_state)}</code>
-        <span style="font-weight:600;">Accept States $F$:</span> <code style="color:var(--status-danger);">{ ${escapeHtml(dfa.accept_states.join(', '))} }</code>
-      </div>
-    `;
-  }
+        response =
+          await fetch(
+            "http://127.0.0.1:8000/predict",
+            {
 
-  async function runDfaTrace() {
-    const text = document.getElementById('dfaTestInput').value;
-    try {
-      const res = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
-      });
-      const raw = await res.json();
-      const data = (raw && typeof raw.result === 'object') ? raw.result : raw;
-      const isDfaMal = data.stages?.dfa;
+              method: "POST",
 
-      dfaTraceData = [
-        { step: 0, input_char: '[start]', from_state: '-', to_state: 'q0', is_accepting: false },
-        { step: 1, input_char: text.substring(0, Math.min(10, text.length)), from_state: 'q0', to_state: isDfaMal ? 'q_accept' : 'q0', is_accepting: isDfaMal }
-      ];
-      currentDfaStep = 0;
-      renderTraceTable();
-    } catch (e) {
-      alert('Trace error: ' + e.message);
+              headers: {
+                "Content-Type":
+                  "application/json"
+              },
+
+              body: JSON.stringify({
+                text: input
+              })
+
+            }
+          );
+
+      }
+
+
+      // =====================================================
+      // HTTP ERROR
+      // =====================================================
+
+      if (!response.ok) {
+
+        throw new Error(
+          "Server responded with status " +
+          response.status
+        );
+
+      }
+
+
+      // =====================================================
+      // READ BACKEND RESPONSE
+      // =====================================================
+
+      const data =
+        await response.json();
+
+
+      console.log(
+        "Backend response:",
+        data
+      );
+
+
+      let verdict =
+        "Unknown";
+
+      let stages = null;
+
+
+      // =====================================================
+      // URL RESPONSE
+      //
+      // /scan-url returns:
+      //
+      // {
+      //   "url": "...",
+      //   "result": "Malicious",
+      //   "stages": {...}
+      // }
+      // =====================================================
+
+      if (isURL) {
+
+        verdict =
+          String(
+            data.result ||
+            "Unknown"
+          );
+
+        stages =
+          data.stages || {};
+
+      }
+
+
+      // =====================================================
+      // TEXT RESPONSE
+      //
+      // /predict returns:
+      //
+      // {
+      //   "input": "...",
+      //   "result": {
+      //      "result": "Safe",
+      //      "stages": {...}
+      //   }
+      // }
+      // =====================================================
+
+      else {
+
+        const analysis =
+          data.result || {};
+
+        verdict =
+          String(
+            analysis.result ||
+            "Unknown"
+          );
+
+        stages =
+          analysis.stages || {};
+
+      }
+
+
+      // =====================================================
+      // CHECK VERDICT
+      // =====================================================
+
+      const lowerVerdict =
+        verdict.toLowerCase();
+
+
+      const isMalicious =
+        lowerVerdict.includes(
+          "malicious"
+        );
+
+
+      const isSafe =
+        lowerVerdict.includes(
+          "safe"
+        );
+
+
+      // =====================================================
+      // MALICIOUS
+      // =====================================================
+
+      if (isMalicious) {
+
+        setMode(
+          'danger'
+        );
+
+        setVerdictLabel(
+          'Threat Detected',
+          'danger'
+        );
+
+
+        showResult(
+          'danger',
+          isURL
+            ? 'Malicious API / URL Detected'
+            : 'Malicious Input Detected',
+
+          'Classifier verdict: ' +
+          '<b>' +
+          escapeHtml(verdict) +
+          '</b>.' +
+
+          '<br><br>' +
+
+          (
+            isURL
+              ? 'The submitted API/URL triggered one or more malicious-input detection stages.'
+              : 'The submitted input triggered one or more malicious-input detection stages.'
+          ) +
+
+          showStages(stages)
+        );
+
+      }
+
+
+      // =====================================================
+      // SAFE
+      // =====================================================
+
+      else if (isSafe) {
+
+        setMode(
+          'safe'
+        );
+
+        setVerdictLabel(
+          'Clear',
+          'safe'
+        );
+
+
+        showResult(
+          'safe',
+          isURL
+            ? 'API / URL Looks Safe'
+            : 'Input Looks Safe',
+
+          'Classifier verdict: ' +
+          '<b>' +
+          escapeHtml(verdict) +
+          '</b>.' +
+
+          '<br><br>' +
+
+          (
+            isURL
+              ? 'No malicious patterns were detected in the submitted API/URL.'
+              : 'No malicious patterns were detected in the submitted input.'
+          ) +
+
+          showStages(stages)
+        );
+
+      }
+
+
+      // =====================================================
+      // UNKNOWN
+      // =====================================================
+
+      else {
+
+        setMode(
+          'error'
+        );
+
+        setVerdictLabel(
+          'Unknown Result',
+          'error'
+        );
+
+
+        showResult(
+          'error',
+          'Unexpected Classifier Result',
+
+          'Backend returned: ' +
+          '<b>' +
+          escapeHtml(verdict) +
+          '</b>.' +
+
+          showStages(stages)
+        );
+
+      }
+
     }
-  }
 
-  function renderTraceTable() {
-    const tbody = document.getElementById('dfaTraceBody');
-    if (!dfaTraceData || dfaTraceData.length === 0) return;
 
-    tbody.innerHTML = dfaTraceData.map((step, idx) => `
-      <tr style="${idx === currentDfaStep ? 'background:#eff6ff;font-weight:700;' : ''}">
-        <td>${step.step}</td>
-        <td><code>${escapeHtml(step.input_char)}</code></td>
-        <td><code>${escapeHtml(step.from_state)}</code></td>
-        <td><code>${escapeHtml(step.to_state)}</code></td>
-        <td><span class="pill ${step.is_accepting ? 'pill-danger' : 'pill-safe'}">${step.is_accepting ? 'ACCEPT' : 'REJECT'}</span></td>
-      </tr>
-    `).join('');
+    // =======================================================
+    // CONNECTION ERROR
+    // =======================================================
 
-    document.getElementById('dfaStepCounter').textContent = `Step: ${currentDfaStep} / ${dfaTraceData.length - 1}`;
-  }
+    catch (error) {
 
-  function stepDfa(delta) {
-    if (!dfaTraceData || dfaTraceData.length === 0) return;
-    currentDfaStep = Math.max(0, Math.min(dfaTraceData.length - 1, currentDfaStep + delta));
-    renderTraceTable();
-  }
+      console.error(
+        "Scan error:",
+        error
+      );
 
-  function resetDfaAnimation() {
-    currentDfaStep = 0;
-    if (dfaPlayInterval) {
-      clearInterval(dfaPlayInterval);
-      dfaPlayInterval = null;
-      document.getElementById('btnPlayDfa').textContent = 'Play';
+
+      setMode(
+        'error'
+      );
+
+
+      setVerdictLabel(
+        'Connection Error',
+        'error'
+      );
+
+
+      showResult(
+        'error',
+
+        'Could Not Reach Detector',
+
+        'The request to the backend failed.' +
+
+        '<br><br>' +
+
+        '<b>Make sure FastAPI is running:</b>' +
+
+        '<br>' +
+
+        'uvicorn backend.main:app' +
+
+        '<br><br>' +
+
+        '<span style="opacity:.7">' +
+
+        escapeHtml(
+          error.message
+        ) +
+
+        '</span>'
+      );
+
     }
-    renderTraceTable();
-  }
 
-  function togglePlayDfa() {
-    const btn = document.getElementById('btnPlayDfa');
-    if (dfaPlayInterval) {
-      clearInterval(dfaPlayInterval);
-      dfaPlayInterval = null;
-      btn.textContent = 'Play';
-    } else {
-      btn.textContent = 'Pause';
-      dfaPlayInterval = setInterval(() => {
-        if (currentDfaStep >= dfaTraceData.length - 1) {
-          clearInterval(dfaPlayInterval);
-          dfaPlayInterval = null;
-          btn.textContent = 'Play';
-          return;
-        }
-        currentDfaStep++;
-        renderTraceTable();
-      }, 500);
+
+    // =======================================================
+    // RESET BUTTON
+    // =======================================================
+
+    finally {
+
+      scanBtn.disabled =
+        false;
+
+      scanBtn.classList.remove(
+        'state-loading'
+      );
+
+      scanBtn.textContent =
+        'Run Scan';
+
+      scanline.classList.remove(
+        'active'
+      );
+
     }
+
   }
 
-  // 8. CFG Parser
-  async function parseCustomCfg() {
-    const text = document.getElementById('cfgTestInput').value;
-    try {
-      const res = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
-      });
-      const raw = await res.json();
-      const data = (raw && typeof raw.result === 'object') ? raw.result : raw;
-      const isMal = data.stages?.cfg;
-
-      document.getElementById('cfgResultsBox').innerHTML = `
-        <div style="margin-bottom:10px;">
-          <b>CFG Evaluation:</b> <span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${isMal ? 'MATCHED MALICIOUS PRODUCTION' : 'CLEAN STRUCTURE'}</span>
-        </div>
-        <div style="font-size:12px;color:var(--text-muted);">Evaluated via restored Stage 3 Context-Free Grammar derivation engine.</div>
-      `;
-    } catch (e) {
-      alert('CFG parse error: ' + e.message);
-    }
-  }
-
-  // 9. Machine Learning Sandbox
-  async function testStandaloneMl() {
-    const text = document.getElementById('mlTestInput').value;
-    try {
-      const res = await fetch('/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text })
-      });
-      const raw = await res.json();
-      const data = (raw && typeof raw.result === 'object') ? raw.result : raw;
-      const isMal = data.stages?.ml;
-
-      document.getElementById('mlScoreResult').innerHTML = `
-        <div style="background:var(--bg-card-subtle);padding:12px;border-radius:8px;border:1px solid var(--border-subtle);margin-top:10px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <b>Restored Model:</b> <span>MultinomialNB (Baseline)</span>
-          </div>
-          <div><b>Stage 4 ML Result:</b> <span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${isMal ? 'Malicious (Class 1)' : 'Safe (Class 0)'}</span></div>
-        </div>
-      `;
-    } catch (e) {
-      alert('ML score error: ' + e.message);
-    }
-  }
-
-  // Eager load on start
-  window.addEventListener('DOMContentLoaded', () => {
-    updateOverviewCards();
-    loadRegexCatalog();
-    loadDfaCatalog();
-  });
 </script>
+
 </body>
+
 </html>
