@@ -13,8 +13,9 @@ Features:
 - Returns structured security telemetry and normalized components.
 """
 
+import json
 from urllib.parse import urlsplit, parse_qs, unquote_plus
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 
 from backend.pipeline import detect_input
 
@@ -182,3 +183,137 @@ def scan_url(url: str, http_method: str = "GET") -> Dict[str, Any]:
             "It cannot verify backend server logic, authentication state, or database query assembly."
         )
     }
+
+
+def scan_api_request(
+    endpoint: str,
+    http_method: str = "GET",
+    headers: Optional[Any] = None,
+    body: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    Statically analyzes an API request specification (endpoint, HTTP method, headers, and request body)
+    for malicious injections without transmitting outbound requests.
+    """
+    clean_endpoint = (endpoint or "").strip()
+    clean_method = (http_method or "GET").upper().strip()
+
+    # Step 1: Scan the endpoint URL and path/query params
+    endpoint_res = scan_url(clean_endpoint, http_method=clean_method)
+
+    stages = {"regex": False, "dfa": False, "cfg": False, "ml": False}
+    for k in ("regex", "dfa", "cfg", "ml"):
+        if endpoint_res["stages"].get(k, False):
+            stages[k] = True
+
+    explanations: List[str] = []
+    suspicious_items: List[str] = []
+
+    if endpoint_res["result"] == "Malicious":
+        explanations.append(f"Endpoint URL: {endpoint_res.get('explanation')}")
+        suspicious_items.extend(endpoint_res.get("suspicious_parameters", []))
+
+    # Step 2: Scan Headers (if provided)
+    header_findings: Dict[str, Any] = {}
+    parsed_headers: Dict[str, str] = {}
+    if headers:
+        if isinstance(headers, dict):
+            parsed_headers = {str(k): str(v) for k, v in headers.items()}
+        elif isinstance(headers, str):
+            try:
+                loaded = json.loads(headers)
+                if isinstance(loaded, dict):
+                    parsed_headers = {str(k): str(v) for k, v in loaded.items()}
+            except Exception:
+                for line in headers.strip().splitlines():
+                    if ":" in line:
+                        hk, hv = line.split(":", 1)
+                        parsed_headers[hk.strip()] = hv.strip()
+
+        for hk, hv in parsed_headers.items():
+            h_det = detect_input(hv)
+            if h_det.get("result") == "Malicious":
+                for k in ("regex", "dfa", "cfg", "ml"):
+                    if h_det["stages"].get(k, False):
+                        stages[k] = True
+                suspicious_items.append(f"Header: {hk}")
+                explanations.append(f"Request Header '{hk}' contains malicious payload ({h_det.get('finding_type')}): {h_det.get('explanation')}")
+            header_findings[hk] = {
+                "value": hv,
+                "result": h_det.get("result"),
+                "risk_level": h_det.get("risk_level")
+            }
+
+    # Step 3: Scan Request Body (if provided)
+    body_findings: List[Dict[str, Any]] = []
+    clean_body = (body or "").strip()
+    if clean_body:
+        # Check if JSON
+        is_json = False
+        try:
+            body_json = json.loads(clean_body)
+            is_json = True
+            def inspect_json_recursive(obj, prefix=""):
+                if isinstance(obj, dict):
+                    for k, v in obj.items():
+                        new_prefix = f"{prefix}.{k}" if prefix else k
+                        inspect_json_recursive(v, new_prefix)
+                elif isinstance(obj, list):
+                    for idx, item in enumerate(obj):
+                        inspect_json_recursive(item, f"{prefix}[{idx}]")
+                elif isinstance(obj, str):
+                    det = detect_input(obj)
+                    if det.get("result") == "Malicious":
+                        for k in ("regex", "dfa", "cfg", "ml"):
+                            if det["stages"].get(k, False):
+                                stages[k] = True
+                        suspicious_items.append(f"Body Field: {prefix}")
+                        explanations.append(f"JSON field '{prefix}' contains malicious payload: {det.get('explanation')}")
+                    body_findings.append({
+                        "field": prefix,
+                        "value": obj[:80] + ("..." if len(obj) > 80 else ""),
+                        "result": det.get("result"),
+                        "risk_level": det.get("risk_level")
+                    })
+
+            inspect_json_recursive(body_json)
+        except Exception:
+            pass
+
+        # If not structured or raw text scan
+        if not is_json:
+            raw_det = detect_input(clean_body)
+            if raw_det.get("result") == "Malicious":
+                for k in ("regex", "dfa", "cfg", "ml"):
+                    if raw_det["stages"].get(k, False):
+                        stages[k] = True
+                suspicious_items.append("Raw Request Body")
+                explanations.append(f"Raw body payload is malicious: {raw_det.get('explanation')}")
+            body_findings.append({
+                "field": "raw_body",
+                "value": clean_body[:80] + ("..." if len(clean_body) > 80 else ""),
+                "result": raw_det.get("result"),
+                "risk_level": raw_det.get("risk_level")
+            })
+
+    is_malicious = any(stages.values()) or (endpoint_res.get("result") == "Malicious")
+    final_verdict = "Malicious" if is_malicious else "Safe"
+    risk_level = "High" if any(stages[s] for s in ("regex", "dfa", "cfg")) else ("Medium" if stages["ml"] else "None")
+
+    if not explanations:
+        explanations.append(f"API request validated clean across endpoint, {len(parsed_headers)} header(s), and body payloads.")
+
+    return {
+        "endpoint": clean_endpoint,
+        "http_method": clean_method,
+        "result": final_verdict,
+        "risk_level": risk_level,
+        "explanation": " ".join(explanations),
+        "stages": stages,
+        "suspicious_items": suspicious_items,
+        "endpoint_analysis": endpoint_res,
+        "header_analysis": header_findings,
+        "body_analysis": body_findings,
+        "disclaimer": "Static inspection only. No outbound network requests were dispatched."
+    }
+

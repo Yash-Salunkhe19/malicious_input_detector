@@ -285,3 +285,46 @@ def test_history_clear_and_delete_endpoints():
     assert res_clear.status_code == 200
     assert res_clear.json()["count"] == 0
 
+
+def test_overview_stats_endpoint():
+    # Insert at least one scan so stats compute
+    client.post("/predict", json={"text": "hello overview world"})
+    res = client.get("/overview/stats")
+    assert res.status_code == 200
+    data = res.json()
+    assert "total_scanned" in data
+    assert "safe_count" in data
+    assert "malicious_count" in data
+    assert "method_breakdown" in data
+    assert "system_status" in data
+
+
+def test_scan_api_endpoint_safe():
+    payload = {
+        "endpoint": "https://api.example.com/v1/orders",
+        "http_method": "POST",
+        "headers": {"Authorization": "Bearer token123", "Content-Type": "application/json"},
+        "body": '{"order_id": 1042, "item": "laptop"}'
+    }
+    res = client.post("/scan-api", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["result"] == "Safe"
+    assert data["risk_level"] == "None"
+
+
+def test_scan_api_endpoint_malicious_body():
+    payload = {
+        "endpoint": "https://api.example.com/v1/login",
+        "http_method": "POST",
+        "headers": {"Content-Type": "application/json"},
+        "body": '{"username": "admin\' OR 1=1 --", "password": "123"}'
+    }
+    res = client.post("/scan-api", json=payload)
+    assert res.status_code == 200
+    data = res.json()
+    assert data["result"] == "Malicious"
+    assert data["risk_level"] == "High"
+    assert any("Body Field: username" in item for item in data["suspicious_items"])
+
+

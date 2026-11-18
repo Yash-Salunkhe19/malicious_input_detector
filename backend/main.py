@@ -22,11 +22,19 @@ from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel, Field
 
 from backend.pipeline import detect_input
-from backend.api_scanner import scan_url
+from backend.api_scanner import scan_url, scan_api_request
 from backend.stage1_rule import get_all_rules
 from backend.stage2_rule import get_all_dfas, trace_single_dfa
 from backend.stage3_cfg import get_cfg_grammar_definition, check_cfg
 from backend.model import load_model_assets
+from backend.database import (
+    add_scan_record,
+    get_scan_records,
+    get_scan_by_id,
+    delete_scan_record,
+    clear_all_scans,
+    get_overview_statistics
+)
 
 
 # ============================================================
@@ -86,6 +94,28 @@ class URLInput(BaseModel):
     http_method: Optional[str] = Field(
         default="GET",
         description="Optional HTTP method context (GET, POST, PUT, DELETE)."
+    )
+
+
+class APIScanRequest(BaseModel):
+    endpoint: str = Field(
+        ...,
+        max_length=4096,
+        description="The target API endpoint URL or route path to inspect.",
+        json_schema_extra={"example": "https://api.example.com/v1/users/profile"}
+    )
+    http_method: Optional[str] = Field(
+        default="GET",
+        description="HTTP Method (GET, POST, PUT, DELETE, PATCH)."
+    )
+    headers: Optional[Any] = Field(
+        default=None,
+        description="Optional HTTP request headers (JSON object or string)."
+    )
+    body: Optional[str] = Field(
+        default=None,
+        max_length=50000,
+        description="Optional request body, form data, or JSON payload."
     )
 
 
@@ -165,11 +195,34 @@ def health():
     }
 
 
+# ============================================================
+# OVERVIEW & ANALYTICS ENDPOINTS
+# ============================================================
+
+@app.get("/overview/stats", tags=["Dashboard"])
+@app.get("/api/overview", tags=["Dashboard"])
+def get_overview_stats():
+    """
+    Returns real-time aggregated overview metrics from persistent SQLite storage:
+    - Total inputs scanned
+    - Safe count & Malicious count
+    - Threat detection percentage
+    - Detection method triggers (Regex, DFA, CFG, ML)
+    - Recent threats & recent scanning activity
+    - System readiness status
+    """
+    return get_overview_statistics()
+
+
+# ============================================================
+# SCANNING ENDPOINTS (Text, URL, API)
+# ============================================================
+
 @app.post("/predict", tags=["Detection"])
 def predict(data: InputText):
     """
     Main detection endpoint for text inputs.
-    Executes the 4-stage hybrid detection pipeline.
+    Executes the 4-stage hybrid detection pipeline and persists scan to SQLite.
     """
     input_str = data.text
     if len(input_str.strip()) == 0:
@@ -181,8 +234,23 @@ def predict(data: InputText):
 
     detection = detect_input(input_str)
 
-    # Append to privacy-conscious scan history
+    # Persist to SQLite database
+    scan_id = add_scan_record(
+        input_type=detection.get("input_type", "Text"),
+        preview=(input_str[:60] + "...") if len(input_str) > 60 else input_str,
+        full_text=input_str,
+        result=detection["result"],
+        risk_level=detection["risk_level"],
+        stages=detection["stages"],
+        explanation=detection.get("explanation", ""),
+        indicators=detection.get("risk_indicators", []),
+        stage_details=detection.get("stage_details", {})
+    )
+    detection["scan_id"] = scan_id
+
+    # Append to memory buffer as well for fast backward compatibility
     SCAN_HISTORY.appendleft({
+        "id": scan_id,
         "type": "text",
         "timestamp": time.strftime("%H:%M:%S"),
         "preview": (input_str[:60] + "...") if len(input_str) > 60 else input_str,
@@ -202,12 +270,30 @@ def predict(data: InputText):
 @app.post("/scan-url", tags=["Detection"])
 def scan_api_url(data: URLInput):
     """
-    URL and API parameter scanner.
+    URL parameter static scanner.
     Statically analyzes path segments and query parameters without outbound network requests.
+    Persists scan to SQLite.
     """
     result = scan_url(data.url, http_method=data.http_method or "GET")
 
+    # Persist to SQLite database
+    scan_id = add_scan_record(
+        input_type="URL / Web Endpoint",
+        preview=(data.url[:60] + "...") if len(data.url) > 60 else data.url,
+        full_text=data.url,
+        result=result["result"],
+        risk_level=result["risk_level"],
+        stages=result["stages"],
+        explanation=result.get("explanation", ""),
+        indicators=result.get("suspicious_parameters", []),
+        stage_details=result.get("parameter_analysis", {}),
+        http_method=data.http_method or "GET",
+        endpoint=data.url
+    )
+    result["scan_id"] = scan_id
+
     SCAN_HISTORY.appendleft({
+        "id": scan_id,
         "type": "url",
         "timestamp": time.strftime("%H:%M:%S"),
         "preview": (data.url[:60] + "...") if len(data.url) > 60 else data.url,
@@ -221,29 +307,100 @@ def scan_api_url(data: URLInput):
     return result
 
 
+@app.post("/scan-api", tags=["Detection"])
+def scan_api(data: APIScanRequest):
+    """
+    Dedicated API scanner inspecting endpoint path, headers, and request body.
+    Performs safe static inspection without outbound network requests.
+    Persists scan to SQLite.
+    """
+    result = scan_api_request(
+        endpoint=data.endpoint,
+        http_method=data.http_method or "GET",
+        headers=data.headers,
+        body=data.body
+    )
+
+    scan_id = add_scan_record(
+        input_type="API Request",
+        preview=f"{result['http_method']} {data.endpoint[:50]}",
+        full_text=f"Endpoint: {data.endpoint}\nMethod: {result['http_method']}\nBody: {data.body or ''}",
+        result=result["result"],
+        risk_level=result["risk_level"],
+        stages=result["stages"],
+        explanation=result.get("explanation", ""),
+        indicators=result.get("suspicious_items", []),
+        stage_details=result,
+        http_method=result["http_method"],
+        endpoint=data.endpoint
+    )
+    result["scan_id"] = scan_id
+
+    SCAN_HISTORY.appendleft({
+        "id": scan_id,
+        "type": "api",
+        "timestamp": time.strftime("%H:%M:%S"),
+        "preview": f"{result['http_method']} {data.endpoint[:50]}",
+        "result": result["result"],
+        "risk_level": result["risk_level"],
+        "stages": result["stages"],
+        "input_type": "API Request",
+        "explanation": result.get("explanation", "")
+    })
+
+    return result
+
+
+# ============================================================
+# PERSISTENT HISTORY & AUDIT ENDPOINTS
+# ============================================================
+
 @app.get("/history", tags=["Detection"])
-def get_history():
-    """Retrieve recent scan history (in-memory circular buffer)."""
+def get_history(
+    search: Optional[str] = Query(None, description="Search term in input preview, full input, or explanation"),
+    verdict: Optional[str] = Query(None, description="Filter by verdict: All, Safe, Malicious"),
+    input_type: Optional[str] = Query(None, description="Filter by input type"),
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0)
+):
+    """Retrieve recent scan history from persistent SQLite database with search and filtering."""
+    db_res = get_scan_records(search=search, verdict=verdict, input_type=input_type, limit=limit, offset=offset)
     return {
-        "history": list(SCAN_HISTORY),
-        "count": len(SCAN_HISTORY)
+        "history": db_res["records"],
+        "count": db_res["total"],
+        "limit": db_res["limit"],
+        "offset": db_res["offset"]
     }
+
+
+@app.get("/history/{scan_id}", tags=["Detection"])
+def get_single_history(scan_id: int):
+    """Retrieve complete details for a single scan by ID from SQLite."""
+    record = get_scan_by_id(scan_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Scan record not found")
+    return record
+
+
+@app.delete("/history/{scan_id}", tags=["Detection"])
+def delete_single_history(scan_id: int):
+    """Delete a single history entry from SQLite by ID."""
+    success = delete_scan_record(scan_id)
+    if not success:
+        # Fallback check on index for in-memory
+        if 0 <= scan_id < len(SCAN_HISTORY):
+            del SCAN_HISTORY[scan_id]
+            return {"status": "deleted", "id": scan_id}
+        raise HTTPException(status_code=404, detail="Scan record not found")
+    return {"status": "deleted", "id": scan_id}
 
 
 @app.delete("/history", tags=["Detection"])
 def clear_history():
-    """Clear all recent scan history from server memory."""
+    """Clear all scan history from persistent SQLite database."""
+    clear_all_scans()
     SCAN_HISTORY.clear()
     return {"status": "cleared", "count": 0}
-
-
-@app.delete("/history/{index}", tags=["Detection"])
-def delete_history_item(index: int):
-    """Delete a single history entry by index from server memory."""
-    if 0 <= index < len(SCAN_HISTORY):
-        del SCAN_HISTORY[index]
-        return {"status": "deleted", "index": index, "remaining": len(SCAN_HISTORY)}
-    raise HTTPException(status_code=404, detail="History index not found")
 
 
 @app.get("/ml/metrics", tags=["Machine Learning"])
