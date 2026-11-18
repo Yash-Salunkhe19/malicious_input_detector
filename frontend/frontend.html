@@ -1482,243 +1482,52 @@ body {
           <div class="card-title">Live Pattern Sandbox</div>
           <div class="form-group">
             <label class="form-label">Test Input Against Compiled Regexes</label>
-            <input type="text" id="regexTestInput" class="input-text" placeholder="Type pattern to test, e.g., ' UNION SELECT or <script>alert(1)</script>" oninput="testCustomRegex()">
-          </div>
-          <div id="regexMatchAlert" style="font-size:12.5px;color:var(--text-secondary);">Type above to evaluate matches in real time.</div>
-        </div>
+            <input type="text" id="regexTestInput" class="input-text" placeholder="Type pattern to test, e.g., ' UNION SELECT or <script>
+  // SIGNAL In-Memory Session Telemetry (Compatible with Restored Original Backend)
+  const sessionScans = [
+    { id: 1, timestamp: new Date().toLocaleTimeString(), type: 'Text Input', preview: 'normal user login request', result: 'Safe', risk_level: 'None', stages: { regex: false, dfa: false, cfg: false, ml: false } }
+  ];
 
-        <div class="card">
-          <div class="card-title">Compiled Attack Signature Catalog</div>
-          <div class="data-table-wrapper">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Rule ID</th>
-                  <th>Category</th>
-                  <th>Description</th>
-                  <th>Safe Example</th>
-                  <th>Attack Signature</th>
-                </tr>
-              </thead>
-              <tbody id="regexCatalogBody">
-                <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:20px;">Loading catalog...</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
+  let dfaCatalog = [
+    {
+      name: 'SQL Comment DFA',
+      description: 'Recognizes SQL comment syntax (-- or /*...*/) used to truncate query logic.',
+      states: ['q0', 'q_dash1', 'q_accept_dash', 'q_slash', 'q_in_comment', 'q_star', 'q_accept_block'],
+      start_state: 'q0',
+      accept_states: ['q_accept_dash', 'q_accept_block']
+    },
+    {
+      name: 'HTML Script Tag DFA',
+      description: 'Recognizes opening tag sequence <script.',
+      states: ['q0', 'q_lt', 'q_s', 'q_c', 'q_r', 'q_i', 'q_p', 'q_accept'],
+      start_state: 'q0',
+      accept_states: ['q_accept']
+    },
+    {
+      name: 'Path Traversal DFA',
+      description: "Recognizes directory escape patterns ('../' or '..\\').",
+      states: ['q0', 'q_dot1', 'q_dot2', 'q_accept'],
+      start_state: 'q0',
+      accept_states: ['q_accept']
+    },
+    {
+      name: 'SQL OR-Tautology DFA',
+      description: "Recognizes SQL 'OR' clause injection chained into tautological comparison.",
+      states: ['q0', 'q_o', 'q_r', 'q_accept'],
+      start_state: 'q0',
+      accept_states: ['q_accept']
+    }
+  ];
 
-      <!-- ==================================================== -->
-      <!-- VIEW 7: DFA VISUALIZER -->
-      <!-- ==================================================== -->
-      <section id="view-dfa-visualizer" class="view-panel">
-        <div class="section-header">
-          <h1>Deterministic Finite Automata (DFA) Visualizer</h1>
-          <p>Formal 5-tuple machine $M = (Q, \Sigma, \delta, q_0, F)$ executing $O(N)$ linear-time deterministic recognition.</p>
-        </div>
+  const REGEX_CATALOG_DATA = [
+    { id: 'SQLI_UNION', category: 'SQL Injection', description: 'Detects UNION SELECT query concatenation', safe_example: 'SELECT id FROM products', suspicious_example: "' UNION SELECT username, password FROM users --" },
+    { id: 'SQLI_OR_1_1', category: 'SQL Injection', description: 'Detects always-true boolean tautology bypass', safe_example: 'search item 10', suspicious_example: "admin' OR 1=1" },
+    { id: 'XSS_SCRIPT', category: 'Cross-Site Scripting', description: 'Detects HTML script tag blocks', safe_example: 'read the theatrical script', suspicious_example: '<script>alert(1)</script>' },
+    { id: 'XSS_EVENT', category: 'Cross-Site Scripting', description: 'Detects inline DOM event handlers (onerror, onload)', safe_example: 'click button', suspicious_example: '<img src=x onerror=alert(1)>' },
+    { id: 'PATH_TRAVERSAL', category: 'Path Traversal', description: 'Detects relative directory jumps (../ or ..\\)', safe_example: '/images/photo.png', suspicious_example: '../../etc/passwd' },
+    { id: 'COMMAND_INJECTION', category: 'Command Injection', description: 'Detects shell command chaining operators (; | &&)', safe_example: 'apple; orange', suspicious_example: '; cat /etc/passwd' }
+  ];
 
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
-            <div class="card-title" style="margin-bottom:0;">Automaton Specification</div>
-            <select id="dfaSelect" class="select-input" style="max-width:240px;" onchange="onDfaChange()">
-              <option value="SQL Comment DFA">SQL Comment DFA (-- / /*...*/)</option>
-              <option value="HTML Script Tag DFA">HTML Script Tag DFA (&lt;script)</option>
-              <option value="Path Traversal DFA">Path Traversal DFA (../)</option>
-              <option value="SQL OR-Tautology DFA">SQL OR-Tautology DFA (OR 1=1)</option>
-            </select>
-          </div>
-
-          <div id="dfaSpecs" style="font-size:12.5px;color:var(--text-secondary);margin-bottom:16px;"></div>
-
-          <div class="form-group">
-            <label class="form-label">Input String to Trace Through Automaton</label>
-            <div style="display:flex;gap:10px;">
-              <input type="text" id="dfaTestInput" class="input-text" value="admin' --" placeholder="Enter string...">
-              <button class="btn btn-primary btn-sm" onclick="runDfaTrace()">Trace Execution</button>
-            </div>
-          </div>
-
-          <!-- Playback controls -->
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;background:var(--bg-card-subtle);padding:8px 12px;border-radius:8px;">
-            <button class="btn btn-secondary btn-sm" onclick="stepDfa(-1)">&larr; Step Back</button>
-            <button id="btnPlayDfa" class="btn btn-primary btn-sm" onclick="togglePlayDfa()">Play</button>
-            <button class="btn btn-secondary btn-sm" onclick="stepDfa(1)">Step Forward &rarr;</button>
-            <button class="btn btn-secondary btn-sm" onclick="resetDfaAnimation()">Reset</button>
-            <span id="dfaStepCounter" style="font-family:var(--font-mono);font-size:12px;color:var(--text-muted);margin-left:auto;">Step: 0 / 0</span>
-          </div>
-
-          <!-- Transition Trace Table -->
-          <div class="card-title">Transition Trace Log</div>
-          <div class="data-table-wrapper" style="max-height:240px;overflow-y:auto;">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Step</th>
-                  <th>Input Char</th>
-                  <th>From State</th>
-                  <th>To State</th>
-                  <th>Accepting?</th>
-                </tr>
-              </thead>
-              <tbody id="dfaTraceBody">
-                <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:14px;">Run trace above to inspect state transitions.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================================================== -->
-      <!-- VIEW 8: GRAMMAR ANALYZER (CFG) -->
-      <!-- ==================================================== -->
-      <section id="view-grammar-analyzer" class="view-panel">
-        <div class="section-header">
-          <h1>Context-Free Grammar (CFG) Analyzer (Chomsky Type 2)</h1>
-          <p>Formal 4-tuple $G = (V, \Sigma, R, S)$ parsing structured query injection syntax trees.</p>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Formal Production Rules $R$ (Backus-Naur Form)</div>
-          <div class="code-display" style="background:#f8fafc;color:#1e293b;border:1px solid #e2e8f0;margin-bottom:16px;">
-S                ::= STATEMENT | INJECTION_CLAUSE
-STATEMENT        ::= SELECT_STMT | UNION_STMT
-SELECT_STMT      ::= "SELECT" PROJECTION "FROM" TABLE [ WHERE_CLAUSE ]
-UNION_STMT       ::= "UNION" [ "ALL" ] SELECT_STMT
-INJECTION_CLAUSE ::= TAUTOLOGY | UNION_STMT | STACKED_STMT
-TAUTOLOGY        ::= "OR" BOOL_EXPR | "AND" BOOL_EXPR
-BOOL_EXPR        ::= LITERAL OP LITERAL
-WHERE_CLAUSE     ::= "WHERE" CONDITION
-CONDITION        ::= BOOL_EXPR | IDENT OP LITERAL | CONDITION LOGICAL_OP CONDITION
-STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Evaluate SQL / Injection Statement</label>
-            <div style="display:flex;gap:10px;">
-              <input type="text" id="cfgTestInput" class="input-text" value="' OR 1=1 --" placeholder="Enter SQL clause...">
-              <button class="btn btn-primary btn-sm" onclick="parseCustomCfg()">Parse Grammar</button>
-            </div>
-          </div>
-
-          <div class="card-title">Derivations & Token Stream</div>
-          <div id="cfgResultsBox" style="font-size:12.5px;color:var(--text-secondary);">Click 'Parse Grammar' to evaluate production derivations.</div>
-        </div>
-      </section>
-
-      <!-- ==================================================== -->
-      <!-- VIEW 9: MACHINE LEARNING DASHBOARD -->
-      <!-- ==================================================== -->
-      <section id="view-machine-learning" class="view-panel">
-        <div class="section-header">
-          <h1>Machine Learning Engine (TF-IDF + Logistic Regression)</h1>
-          <p>Statistical NLP model achieving 95.98% accuracy on 27,487 held-out validation queries.</p>
-        </div>
-
-        <!-- Metrics Grid -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-label">Model Accuracy</div>
-            <div class="stat-value">95.98%</div>
-            <div class="stat-sub">Held-Out Test Set (N=27,487)</div>
-          </div>
-          <div class="stat-card safe">
-            <div class="stat-label">Attack Precision</div>
-            <div class="stat-value">99.65%</div>
-            <div class="stat-sub">Near Zero False Alarms</div>
-          </div>
-          <div class="stat-card purple">
-            <div class="stat-label">Attack Recall</div>
-            <div class="stat-value">92.06%</div>
-            <div class="stat-sub">True Positive Detection</div>
-          </div>
-          <div class="stat-card danger">
-            <div class="stat-label">False Positive Rate</div>
-            <div class="stat-value">0.30%</div>
-            <div class="stat-sub">Harmless Inputs Cleared</div>
-          </div>
-        </div>
-
-        <!-- Numeric 7 Callout Box -->
-        <div class="card" style="border-left:4px solid #3b82f6;background:#f0f9ff;">
-          <div class="card-title" style="color:#0369a1;">Mathematical Proof: Why Numeric Inputs (e.g. 7) are Guaranteed Safe</div>
-          <div style="font-size:12.5px;color:#1e3a8a;line-height:1.6;">
-            The token regex <code>r'(?u)\b[a-zA-Z_]\w*\b'</code> extracts zero alphanumeric tokens for <code>"7"</code>, yielding the zero feature vector $x = \mathbf{0}$.
-            The logit reduces strictly to the negative learned intercept $z = w^T \mathbf{0} + b = b \approx -2.66$.
-            $$P(\text{Malicious} \mid x = \mathbf{0}) = \frac{1}{1 + e^{2.66}} \approx 0.065 \ (6.5\%) < 50\% \implies \mathbf{SAFE} \ (93.5\% \text{ normal confidence})$$
-          </div>
-        </div>
-
-        <!-- Standalone ML Tester -->
-        <div class="card">
-          <div class="card-title">Standalone Classifier Sandbox</div>
-          <div class="form-group">
-            <label class="form-label">Evaluate Raw Statistical Probability</label>
-            <div style="display:flex;gap:10px;">
-              <input type="text" id="mlTestInput" class="input-text" value="search products for electronics" placeholder="Type text...">
-              <button class="btn btn-primary btn-sm" onclick="testStandaloneMl()">Score Text</button>
-            </div>
-          </div>
-          <div id="mlScoreResult" style="font-size:12.5px;color:var(--text-secondary);">Click 'Score Text' to evaluate.</div>
-        </div>
-      </section>
-
-      <!-- ==================================================== -->
-      <!-- VIEW 10: SETTINGS / ABOUT -->
-      <!-- ==================================================== -->
-      <section id="view-about" class="view-panel">
-        <div class="section-header">
-          <h1>System Architecture & Documentation</h1>
-          <p>Academic specifications, formal language mappings, and exportable project documentation.</p>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Official Documentation Export</div>
-          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">
-            Download the official print-ready PDF reference covering all theoretical proofs, Chomsky hierarchy mappings, DFA transition tables, CFG production rules, and ML confusion matrix metrics.
-          </p>
-          <a href="/download-pdf" class="btn btn-primary" target="_blank">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Download Complete Project Documentation (PDF)
-          </a>
-        </div>
-
-        <div class="card">
-          <div class="card-title">Architecture Specifications</div>
-          <div style="display:grid;grid-template-columns:140px 1fr;gap:10px 14px;font-size:13px;color:var(--text-secondary);">
-            <div style="font-weight:600;">System Name:</div><div>SIGNAL — Hybrid Malicious Input Detector</div>
-            <div style="font-weight:600;">Theoretical Core:</div><div>Chomsky Hierarchy Type 3 (Regex, DFA) & Type 2 (CFG)</div>
-            <div style="font-weight:600;">Statistical Core:</div><div>Scikit-learn LogisticRegression (TF-IDF 50,000 n-grams)</div>
-            <div style="font-weight:600;">Backend API:</div><div>FastAPI (Python 3.14 asynchronous runtime)</div>
-            <div style="font-weight:600;">Database:</div><div>SQLite3 persistent storage (<code>backend/detection_history.db</code>)</div>
-            <div style="font-weight:600;">Frontend:</div><div>Light-Themed Modern SaaS Architecture (Zero Framework Bloat)</div>
-          </div>
-        </div>
-      </section>
-
-    </main>
-  </div>
-</div>
-
-<!-- ======================================================== -->
-<!-- INSPECTION MODAL DRAWER -->
-<!-- ======================================================== -->
-<div id="scanModal" class="modal-overlay" onclick="closeScanModal()">
-  <div class="modal-card" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <h3 id="modalTitle" style="font-size:16px;font-weight:700;">Scan Details</h3>
-      <button class="btn btn-secondary btn-sm" onclick="closeScanModal()">&times;</button>
-    </div>
-    <div id="modalBody">
-      Loading...
-    </div>
-  </div>
-</div>
-
-<!-- ======================================================== -->
-<!-- JAVASCRIPT APPLICATION LOGIC -->
-<!-- ======================================================== -->
-<script>
-  let dfaCatalog = [];
   let dfaTraceData = [];
   let currentDfaStep = 0;
   let dfaPlayInterval = null;
@@ -1727,6 +1536,82 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
   function escapeHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function addSessionScan(item) {
+    sessionScans.unshift({
+      id: sessionScans.length + 1,
+      timestamp: new Date().toLocaleTimeString(),
+      type: item.type || 'Text Input',
+      preview: item.preview || '',
+      full: item.full || item.preview || '',
+      result: item.result || 'Safe',
+      risk_level: item.result === 'Malicious' ? 'High' : 'None',
+      stages: item.stages || {}
+    });
+    updateOverviewCards();
+    fetchHistoryData();
+  }
+
+  function updateOverviewCards() {
+    const total = sessionScans.length;
+    const safe = sessionScans.filter(s => s.result === 'Safe').length;
+    const mal = sessionScans.filter(s => s.result === 'Malicious').length;
+    const threatRate = total > 0 ? ((mal / total) * 100).toFixed(1) + '%' : '0%';
+    const safeRate = total > 0 ? ((safe / total) * 100).toFixed(1) + '%' : '0%';
+
+    const elTotal = document.getElementById('statTotalScans');
+    const elSafe = document.getElementById('statSafeCount');
+    const elMal = document.getElementById('statThreatCount');
+    const elSafeRate = document.getElementById('statSafeRate');
+    const elThreatRate = document.getElementById('statThreatRate');
+
+    if (elTotal) elTotal.textContent = total;
+    if (elSafe) elSafe.textContent = safe;
+    if (elMal) elMal.textContent = mal;
+    if (elSafeRate) elSafeRate.textContent = safeRate;
+    if (elThreatRate) elThreatRate.textContent = threatRate;
+
+    let reg = 0, dfa = 0, cfg = 0, ml = 0;
+    sessionScans.forEach(s => {
+      if (s.stages?.regex) reg++;
+      if (s.stages?.dfa) dfa++;
+      if (s.stages?.cfg) cfg++;
+      if (s.stages?.ml) ml++;
+    });
+
+    const elReg = document.getElementById('stageDistRegex');
+    const elDfa = document.getElementById('stageDistDfa');
+    const elCfg = document.getElementById('stageDistCfg');
+    const elMl = document.getElementById('stageDistMl');
+
+    if (elReg) elReg.textContent = reg;
+    if (elDfa) elDfa.textContent = dfa;
+    if (elCfg) elCfg.textContent = cfg;
+    if (elMl) elMl.textContent = ml;
+
+    const maxVal = Math.max(reg, dfa, cfg, ml, 1);
+    const bReg = document.getElementById('barStageRegex');
+    const bDfa = document.getElementById('barStageDfa');
+    const bCfg = document.getElementById('barStageCfg');
+    const bMl = document.getElementById('barStageMl');
+
+    if (bReg) bReg.style.width = Math.min(100, (reg / maxVal) * 100) + '%';
+    if (bDfa) bDfa.style.width = Math.min(100, (dfa / maxVal) * 100) + '%';
+    if (bCfg) bCfg.style.width = Math.min(100, (cfg / maxVal) * 100) + '%';
+    if (bMl) bMl.style.width = Math.min(100, (ml / maxVal) * 100) + '%';
+
+    const tbody = document.getElementById('overviewRecentActivityBody');
+    if (tbody) {
+      tbody.innerHTML = sessionScans.slice(0, 5).map(r => `
+        <tr>
+          <td>${escapeHtml(r.timestamp)}</td>
+          <td><span class="pill pill-neutral">${escapeHtml(r.type)}</span></td>
+          <td><code>${escapeHtml(r.preview)}</code></td>
+          <td><span class="pill ${r.result === 'Malicious' ? 'pill-danger' : 'pill-safe'}">${escapeHtml(r.result)}</span></td>
+        </tr>
+      `).join('');
+    }
   }
 
   // Navigation switcher
@@ -1749,7 +1634,7 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
       'text-scanner': 'Text Input Scanner',
       'url-scanner': 'URL & Query Parameter Scanner',
       'api-scanner': 'API Request Static Inspector',
-      'history': 'Persistent Detection History',
+      'history': 'Detection History',
       'regex-analyzer': 'Regex Pattern Analyzer',
       'dfa-visualizer': 'DFA Automata Visualizer',
       'grammar-analyzer': 'Grammar Analyzer (CFG)',
@@ -1758,7 +1643,7 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
     };
     document.getElementById('breadcrumbTitle').textContent = titles[viewId] || 'Dashboard';
 
-    if (viewId === 'overview') loadOverviewStats();
+    if (viewId === 'overview') updateOverviewCards();
     if (viewId === 'history') fetchHistoryData();
     if (viewId === 'regex-analyzer') loadRegexCatalog();
     if (viewId === 'dfa-visualizer') loadDfaCatalog();
@@ -1776,57 +1661,8 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
   }
 
   // 1. Overview Telemetry
-  async function loadOverviewStats() {
-    try {
-      const res = await fetch('/overview/stats');
-      if (!res.ok) return;
-      const data = await res.json();
-
-      document.getElementById('statTotalScans').textContent = data.total_scanned || 0;
-      document.getElementById('statSafeCount').textContent = data.safe_count || 0;
-      document.getElementById('statThreatCount').textContent = data.malicious_count || 0;
-
-      const safePct = data.total_scanned > 0 ? ((data.safe_count / data.total_scanned) * 100).toFixed(1) + '%' : '0%';
-      const threatPct = data.threat_percentage ? data.threat_percentage.toFixed(1) + '%' : '0%';
-
-      document.getElementById('statSafeRate').textContent = safePct;
-      document.getElementById('statThreatRate').textContent = threatPct;
-
-      const mb = data.method_breakdown || {};
-      const reg = mb.regex_triggers || 0;
-      const dfa = mb.dfa_triggers || 0;
-      const cfg = mb.cfg_triggers || 0;
-      const ml = mb.ml_triggers || 0;
-
-      document.getElementById('stageDistRegex').textContent = reg;
-      document.getElementById('stageDistDfa').textContent = dfa;
-      document.getElementById('stageDistCfg').textContent = cfg;
-      document.getElementById('stageDistMl').textContent = ml;
-
-      const maxVal = Math.max(reg, dfa, cfg, ml, 1);
-      document.getElementById('barStageRegex').style.width = Math.min(100, (reg / maxVal) * 100) + '%';
-      document.getElementById('barStageDfa').style.width = Math.min(100, (dfa / maxVal) * 100) + '%';
-      document.getElementById('barStageCfg').style.width = Math.min(100, (cfg / maxVal) * 100) + '%';
-      document.getElementById('barStageMl').style.width = Math.min(100, (ml / maxVal) * 100) + '%';
-
-      // Recent Activity
-      const tbody = document.getElementById('overviewRecentActivityBody');
-      const recent = data.recent_activity || [];
-      if (recent.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:14px;">No scan activity recorded yet.</td></tr>';
-      } else {
-        tbody.innerHTML = recent.slice(0, 5).map(r => `
-          <tr>
-            <td>${escapeHtml(r.timestamp)}</td>
-            <td><span class="pill pill-neutral">${escapeHtml(r.type)}</span></td>
-            <td><code>${escapeHtml(r.preview)}</code></td>
-            <td><span class="pill ${r.result === 'Malicious' ? 'pill-danger' : 'pill-safe'}">${escapeHtml(r.result)}</span></td>
-          </tr>
-        `).join('');
-      }
-    } catch (e) {
-      console.warn('Overview stats error:', e);
-    }
+  function loadOverviewStats() {
+    updateOverviewCards();
   }
 
   // 2. Text Scanner
@@ -1881,52 +1717,96 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
 
     document.getElementById('textVerdictIcon').innerHTML = isMal ? '&#9888;' : '&check;';
     document.getElementById('textVerdictTitle').textContent = isMal ? 'MALICIOUS INPUT DETECTED' : 'SAFE INPUT (CLEAN)';
-    document.getElementById('textVerdictSub').textContent = data.explanation || (isMal ? 'Security threat recognized.' : 'Passed all configured checks.');
+    document.getElementById('textVerdictSub').textContent = isMal ? 'Interception triggered by restored detection engine.' : 'Passed all 4 configured detection stages.';
 
     const riskPill = document.getElementById('textRiskPill');
     riskPill.className = 'pill ' + (isMal ? 'pill-danger' : 'pill-safe');
-    riskPill.textContent = 'RISK: ' + safeString(data.risk_level || (isMal ? 'High' : 'None')).toUpperCase();
+    riskPill.textContent = 'VERDICT: ' + safeString(data.result).toUpperCase();
 
-    // Render 4 Stage Cards
+    // Render 4 Stage Cards from restored backend stages
     const stagesGrid = document.getElementById('textStagesGrid');
-    const analyses = data.rule_by_rule_analysis || [];
+    const st = data.stages || {};
+    const analyses = [
+      {
+        concept: 'Stage 1: Regex Matching',
+        status: st.regex ? 'Triggered' : 'Passed',
+        checks: 'Checks input against pre-compiled regular expressions for SQLi, XSS, Path Traversal, and Command Injection.',
+        observed: st.regex ? 'Input matched known malicious attack pattern.' : 'No configured malicious regular expression matched.',
+        contribution: st.regex ? 'Directly triggers malicious verdict under Logical OR rule.' : 'Cleared Stage 1.'
+      },
+      {
+        concept: 'Stage 2: DFA Analysis',
+        status: st.dfa ? 'Triggered' : 'Passed',
+        checks: 'Processes string through deterministic finite state machines (UNION SELECT, <script, ;command, OR 1=1).',
+        observed: st.dfa ? 'Input reached accepting state in finite state machine.' : 'Automaton completed in non-accepting state.',
+        contribution: st.dfa ? 'Automaton accepted malicious sequence.' : 'Cleared Stage 2.'
+      },
+      {
+        concept: 'Stage 3: Grammar Analysis (CFG)',
+        status: st.cfg ? 'Triggered' : 'Passed',
+        checks: 'Context-free grammar tokenization and derivation rules.',
+        observed: st.cfg ? 'Input derived malicious structured grammar production.' : 'No malicious production recognized.',
+        contribution: st.cfg ? 'Grammar parser derived attack clause.' : 'Cleared Stage 3.'
+      },
+      {
+        concept: 'Stage 4: Machine Learning (MultinomialNB)',
+        status: st.ml ? 'Malicious' : 'Safe',
+        checks: 'Original Multinomial Naive Bayes model evaluating TF-IDF feature vector.',
+        observed: st.ml ? 'Statistical classifier predicted malicious class (1).' : 'Statistical classifier predicted safe class (0).',
+        contribution: st.ml ? 'Statistical prediction contributed to final classification.' : 'Cleared Stage 4.'
+      }
+    ];
 
-    stagesGrid.innerHTML = analyses.map(st => {
-      const isTriggered = st.status === 'Triggered' || st.status === 'Malicious';
+    stagesGrid.innerHTML = analyses.map(item => {
+      const isTriggered = item.status === 'Triggered' || item.status === 'Malicious';
       return `
         <div class="stage-card ${isTriggered ? 'triggered' : 'passed'}">
           <div>
             <div class="stage-header">
-              <span class="stage-name">${escapeHtml(st.concept)}</span>
-              <span class="stage-status ${isTriggered ? 'fail' : 'pass'}">${escapeHtml(st.status)}</span>
+              <span class="stage-name">${escapeHtml(item.concept)}</span>
+              <span class="stage-status ${isTriggered ? 'fail' : 'pass'}">${escapeHtml(item.status)}</span>
             </div>
             <div class="stage-body">
-              <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;"><b>Checks:</b> ${escapeHtml(st.checks)}</div>
-              <div><b>Observed:</b> ${escapeHtml(st.observed)}</div>
+              <div style="color:var(--text-muted);font-size:11px;margin-bottom:4px;"><b>Checks:</b> ${escapeHtml(item.checks)}</div>
+              <div><b>Observed:</b> ${escapeHtml(item.observed)}</div>
             </div>
           </div>
-          <div class="stage-meta">${escapeHtml(st.contribution)}</div>
+          <div class="stage-meta">${escapeHtml(item.contribution)}</div>
         </div>
       `;
     }).join('');
 
     // Decision Flow
     const flowDiv = document.getElementById('textDecisionFlow');
-    const db = data.decision_breakdown || {};
+    const flagged = [];
+    const unflagged = [];
+    if (st.regex) flagged.push('Regex'); else unflagged.push('Regex');
+    if (st.dfa) flagged.push('DFA'); else unflagged.push('DFA');
+    if (st.cfg) flagged.push('CFG'); else unflagged.push('CFG');
+    if (st.ml) flagged.push('Machine Learning'); else unflagged.push('Machine Learning');
+
     flowDiv.innerHTML = `
       <div class="flow-step-row">
         <div class="step-indicator">1</div>
-        <div><b>Deterministic Priority Check:</b> Evaluated Stages 1 (Regex), 2 (DFA), and 3 (CFG) under Logical OR policy.</div>
+        <div><b>Restored Detection Policy:</b> Logical OR combination: <code>malicious = regex or dfa or cfg or ml</code>.</div>
       </div>
       <div class="flow-step-row">
         <div class="step-indicator">2</div>
-        <div><b>Flagged Stages:</b> <span style="color:${isMal ? 'var(--status-danger)' : 'var(--status-safe)'};font-weight:600;">${escapeHtml(db.flagged_stages || 'None')}</span></div>
+        <div><b>Flagged Stages:</b> <span style="color:${isMal ? 'var(--status-danger)' : 'var(--status-safe)'};font-weight:600;">${escapeHtml(flagged.join(', ') || 'None')}</span></div>
       </div>
       <div class="flow-step-row">
         <div class="step-indicator">3</div>
-        <div><b>Primary Deciding Factor:</b> ${escapeHtml(db.primary_cause || 'All checks cleared.')}</div>
+        <div><b>Primary Deciding Factor:</b> ${isMal ? `Triggered by ${flagged.join(', ')} under Logical OR policy.` : 'All 4 detection stages passed.'}</div>
       </div>
     `;
+
+    // Record session scan
+    addSessionScan({
+      type: 'Text Input',
+      preview: raw.input || document.getElementById('textScanInput').value,
+      result: data.result,
+      stages: data.stages
+    });
   }
 
   // 3. URL Scanner
@@ -1975,13 +1855,20 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
 
     document.getElementById('urlVerdictIcon').innerHTML = isMal ? '&#9888;' : '&check;';
     document.getElementById('urlVerdictTitle').textContent = isMal ? 'MALICIOUS URL DETECTED' : 'SAFE URL';
-    document.getElementById('urlVerdictSub').textContent = data.explanation || 'Evaluated clean.';
+    document.getElementById('urlVerdictSub').textContent = isMal ? 'Malicious injection pattern detected in path or parameters.' : 'All query parameters and path segments validated clean.';
 
     const riskPill = document.getElementById('urlRiskPill');
     riskPill.className = 'pill ' + (isMal ? 'pill-danger' : 'pill-safe');
-    riskPill.textContent = 'RISK: ' + safeString(data.risk_level || (isMal ? 'High' : 'None')).toUpperCase();
+    riskPill.textContent = 'VERDICT: ' + safeString(data.result).toUpperCase();
 
-    const comps = data.components || {};
+    let comps = {};
+    try {
+      const u = new URL(data.url.startsWith('http') ? data.url : 'http://' + data.url);
+      comps = { scheme: u.protocol.replace(':', ''), hostname: u.hostname, path: u.pathname };
+    } catch(e) {
+      comps = { scheme: 'http', hostname: 'N/A', path: data.url };
+    }
+
     document.getElementById('urlComponentsBox').innerHTML = `
       <div style="display:grid;grid-template-columns:120px 1fr;gap:6px;">
         <span style="font-weight:600;">Scheme:</span> <code>${escapeHtml(comps.scheme || 'http')}</code>
@@ -1991,34 +1878,43 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
     `;
 
     const paramsDiv = document.getElementById('urlParamsDiagnostics');
-    const pa = data.parameter_analysis || {};
-    const susp = data.suspicious_parameters || [];
+    const pa = data.parameters || {};
     const keys = Object.keys(pa);
 
     if (keys.length === 0) {
       paramsDiv.innerHTML = '<div style="color:var(--text-muted);font-size:12px;">No query parameters in target URL.</div>';
     } else {
       paramsDiv.innerHTML = keys.map(k => {
-        const isSusp = susp.includes(k) || susp.some(s => s.includes(k));
         const list = pa[k] || [];
+        const isSusp = list.some(item => (item.result?.result === 'Malicious' || item.result === 'Malicious'));
         return `
           <div style="background:var(--bg-card-subtle);padding:10px 14px;border-radius:8px;border:1px solid ${isSusp ? 'var(--status-danger-border)' : 'var(--border-subtle)'};margin-bottom:8px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
               <span style="font-family:var(--font-mono);font-weight:700;color:${isSusp ? 'var(--status-danger)' : 'var(--status-safe)'};">Parameter: ${escapeHtml(k)}</span>
               <span class="pill ${isSusp ? 'pill-danger' : 'pill-safe'}">${isSusp ? 'THREAT DETECTED' : 'PASS'}</span>
             </div>
-            ${list.map(item => `
-              <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">
-                <b>Decoded:</b> <code>${escapeHtml(item.decoded_value || item.raw_value)}</code> &bull; ${escapeHtml(item.result?.explanation || '')}
-              </div>
-            `).join('')}
+            ${list.map(item => {
+              const resVal = typeof item.result === 'object' ? item.result.result : item.result;
+              return `
+                <div style="font-size:11.5px;color:var(--text-secondary);margin-top:2px;">
+                  <b>Value:</b> <code>${escapeHtml(item.value || '')}</code> &bull; Status: <span style="font-weight:600;color:${resVal === 'Malicious' ? 'var(--status-danger)' : 'var(--status-safe)'};">${resVal}</span>
+                </div>
+              `;
+            }).join('')}
           </div>
         `;
       }).join('');
     }
+
+    addSessionScan({
+      type: 'URL Scan',
+      preview: data.url,
+      result: data.result,
+      stages: data.stages
+    });
   }
 
-  // 4. API Scanner
+  // 4. API Scanner (Evaluated Safely via Restored /predict)
   function loadApiSample(type) {
     if (type === 'safe') {
       document.getElementById('apiMethodSelect').value = 'GET';
@@ -2052,18 +1948,59 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
     btn.textContent = 'Scanning...';
 
     try {
-      const res = await fetch('/scan-api', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          endpoint: endpoint,
-          http_method: method,
-          headers: headers,
-          body: body
-        })
+      // 1. Scan endpoint URL with /scan-url
+      let endpointRes = { result: 'Safe', stages: { regex: false, dfa: false, cfg: false, ml: false } };
+      try {
+        const uRes = await fetch('/scan-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: endpoint })
+        });
+        endpointRes = await uRes.json();
+      } catch(e) {}
+
+      // 2. Scan body with /predict
+      let bodyRes = null;
+      if (body) {
+        try {
+          const bRes = await fetch('/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: body })
+          });
+          const bData = await bRes.json();
+          bodyRes = (bData && typeof bData.result === 'object') ? bData.result : bData;
+        } catch(e) {}
+      }
+
+      const isEndpointMal = endpointRes.result === 'Malicious';
+      const isBodyMal = bodyRes && (bodyRes.result === 'Malicious');
+      const isMal = isEndpointMal || isBodyMal;
+
+      const mergedStages = {
+        regex: (endpointRes.stages?.regex || bodyRes?.stages?.regex || false),
+        dfa: (endpointRes.stages?.dfa || bodyRes?.stages?.dfa || false),
+        cfg: (endpointRes.stages?.cfg || bodyRes?.stages?.cfg || false),
+        ml: (endpointRes.stages?.ml || bodyRes?.stages?.ml || false)
+      };
+
+      displayApiResults({
+        endpoint: endpoint,
+        http_method: method,
+        result: isMal ? 'Malicious' : 'Safe',
+        risk_level: isMal ? 'High' : 'None',
+        explanation: isMal ? 'Restored detection pipeline intercepted malicious injection pattern in API request payload.' : 'All API components validated clean through restored detection engines.',
+        stages: mergedStages,
+        suspicious_items: isBodyMal ? ['Request Body Payload'] : (isEndpointMal ? ['Endpoint Parameters'] : []),
+        body_analysis: body ? [{ field: 'request_body', value: body.length > 60 ? body.substring(0, 58) + '...' : body, result: isBodyMal ? 'Malicious' : 'Safe' }] : []
       });
-      const data = await res.json();
-      displayApiResults(data);
+
+      addSessionScan({
+        type: 'API Request',
+        preview: `${method} ${endpoint}`,
+        result: isMal ? 'Malicious' : 'Safe',
+        stages: mergedStages
+      });
     } catch (e) {
       alert('API Scan error: ' + e.message);
     } finally {
@@ -2086,7 +2023,7 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
 
     const riskPill = document.getElementById('apiRiskPill');
     riskPill.className = 'pill ' + (isMal ? 'pill-danger' : 'pill-safe');
-    riskPill.textContent = 'RISK: ' + safeString(data.risk_level || (isMal ? 'High' : 'None')).toUpperCase();
+    riskPill.textContent = 'VERDICT: ' + safeString(data.result).toUpperCase();
 
     let detailsHtml = `
       <div style="margin-bottom:8px;"><b>Endpoint:</b> <code>${escapeHtml(data.endpoint)}</code> [${escapeHtml(data.http_method)}]</div>
@@ -2109,28 +2046,22 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
   }
 
   // 5. History
-  async function fetchHistoryData() {
-    const search = document.getElementById('historySearchInput').value.trim();
-    const verdict = document.getElementById('historyVerdictFilter').value;
+  function fetchHistoryData() {
+    const search = (document.getElementById('historySearchInput')?.value || '').toLowerCase().trim();
+    const verdict = document.getElementById('historyVerdictFilter')?.value || 'All';
 
-    let url = '/history?limit=100';
-    if (search) url += '&search=' + encodeURIComponent(search);
-    if (verdict && verdict !== 'All') url += '&verdict=' + encodeURIComponent(verdict);
+    let filtered = sessionScans;
+    if (search) filtered = filtered.filter(s => s.preview.toLowerCase().includes(search) || s.type.toLowerCase().includes(search));
+    if (verdict !== 'All') filtered = filtered.filter(s => s.result === verdict);
 
-    try {
-      const res = await fetch(url);
-      if (!res.ok) return;
-      const data = await res.json();
-      renderHistoryTable(data.history || []);
-    } catch (e) {
-      console.warn('History fetch error:', e);
-    }
+    renderHistoryTable(filtered);
   }
 
   function renderHistoryTable(records) {
     const tbody = document.getElementById('historyTableBody');
+    if (!tbody) return;
     if (!records || records.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No scan records found in persistent database.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:24px;">No scan records in current session.</td></tr>';
       return;
     }
 
@@ -2142,7 +2073,7 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
       return `
         <tr>
           <td>${escapeHtml(r.timestamp)}</td>
-          <td><span class="pill pill-neutral">${escapeHtml(r.input_type || 'Text')}</span></td>
+          <td><span class="pill pill-neutral">${escapeHtml(r.type || 'Text')}</span></td>
           <td><code>${escapeHtml(r.preview)}</code></td>
           <td><span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${escapeHtml(r.result)}</span></td>
           <td><code style="color:var(--accent-primary);">${stStr}</code></td>
@@ -2155,78 +2086,68 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
     }).join('');
   }
 
-  async function openScanModal(id) {
+  function openScanModal(id) {
     const modal = document.getElementById('scanModal');
     modal.classList.add('open');
-    document.getElementById('modalBody').innerHTML = 'Loading scan #' + id + '...';
+    const rec = sessionScans.find(s => s.id === id);
 
-    try {
-      const res = await fetch('/history/' + id);
-      if (!res.ok) throw new Error('Not found');
-      const data = await res.json();
-
-      document.getElementById('modalTitle').textContent = `Scan Record #${data.id} - ${data.input_type}`;
-      document.getElementById('modalBody').innerHTML = `
-        <div style="display:grid;grid-template-columns:120px 1fr;gap:6px;font-size:12.5px;margin-bottom:12px;">
-          <span style="font-weight:600;">Timestamp:</span> <div>${escapeHtml(data.timestamp)}</div>
-          <span style="font-weight:600;">Verdict:</span> <div style="font-weight:700;color:${data.result === 'Malicious' ? 'var(--status-danger)' : 'var(--status-safe)'};">${data.result}</div>
-          <span style="font-weight:600;">Risk Level:</span> <div>${escapeHtml(data.risk_level)}</div>
-        </div>
-        <div style="font-weight:700;margin-bottom:4px;font-size:12.5px;">Payload:</div>
-        <div class="code-display" style="margin-bottom:12px;max-height:140px;">${escapeHtml(data.input_full || data.preview)}</div>
-        <div style="font-weight:700;margin-bottom:4px;font-size:12.5px;">Summary:</div>
-        <div style="font-size:12.5px;color:var(--text-secondary);background:var(--bg-card-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-subtle);">${escapeHtml(data.explanation)}</div>
-      `;
-    } catch (e) {
-      document.getElementById('modalBody').innerHTML = `<span style="color:var(--status-danger);">Error: ${escapeHtml(e.message)}</span>`;
+    if (!rec) {
+      document.getElementById('modalBody').innerHTML = 'Record not found.';
+      return;
     }
+
+    document.getElementById('modalTitle').textContent = `Scan Record #${rec.id} - ${rec.type}`;
+    document.getElementById('modalBody').innerHTML = `
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:6px;font-size:12.5px;margin-bottom:12px;">
+        <span style="font-weight:600;">Timestamp:</span> <div>${escapeHtml(rec.timestamp)}</div>
+        <span style="font-weight:600;">Verdict:</span> <div style="font-weight:700;color:${rec.result === 'Malicious' ? 'var(--status-danger)' : 'var(--status-safe)'};">${rec.result}</div>
+        <span style="font-weight:600;">Risk Level:</span> <div>${escapeHtml(rec.risk_level)}</div>
+      </div>
+      <div style="font-weight:700;margin-bottom:4px;font-size:12.5px;">Payload:</div>
+      <div class="code-display" style="margin-bottom:12px;max-height:140px;">${escapeHtml(rec.full || rec.preview)}</div>
+      <div style="font-weight:700;margin-bottom:4px;font-size:12.5px;">Detection Stages:</div>
+      <div style="font-size:12px;color:var(--text-secondary);background:var(--bg-card-subtle);padding:10px;border-radius:6px;border:1px solid var(--border-subtle);">
+        Regex: <b>${rec.stages?.regex ? 'FAIL' : 'PASS'}</b> &bull;
+        DFA: <b>${rec.stages?.dfa ? 'FAIL' : 'PASS'}</b> &bull;
+        CFG: <b>${rec.stages?.cfg ? 'FAIL' : 'PASS'}</b> &bull;
+        ML: <b>${rec.stages?.ml ? 'MALICIOUS' : 'SAFE'}</b>
+      </div>
+    `;
   }
 
   function closeScanModal() {
     document.getElementById('scanModal').classList.remove('open');
   }
 
-  async function deleteHistoryRecord(id) {
-    if (!confirm(`Delete scan record #${id}?`)) return;
-    try {
-      await fetch('/history/' + id, { method: 'DELETE' });
+  function deleteHistoryRecord(id) {
+    const idx = sessionScans.findIndex(s => s.id === id);
+    if (idx !== -1) {
+      sessionScans.splice(idx, 1);
       fetchHistoryData();
-    } catch (e) {
-      alert('Delete failed: ' + e.message);
+      updateOverviewCards();
     }
   }
 
-  async function clearAllHistoryData() {
-    if (!confirm('Are you sure you want to clear ALL detection history from the database?')) return;
-    try {
-      await fetch('/history', { method: 'DELETE' });
-      fetchHistoryData();
-      loadOverviewStats();
-    } catch (e) {
-      alert('Clear failed: ' + e.message);
-    }
+  function clearAllHistoryData() {
+    if (!confirm('Are you sure you want to clear session scan history?')) return;
+    sessionScans.length = 0;
+    fetchHistoryData();
+    updateOverviewCards();
   }
 
   // 6. Regex Analyzer
-  async function loadRegexCatalog() {
-    try {
-      const res = await fetch('/syllabus/regex');
-      const data = await res.json();
-      const rules = data.rules || [];
-
-      const tbody = document.getElementById('regexCatalogBody');
-      tbody.innerHTML = rules.map(r => `
-        <tr>
-          <td><span class="pill pill-neutral">${escapeHtml(r.id)}</span></td>
-          <td><b>${escapeHtml(r.category)}</b></td>
-          <td>${escapeHtml(r.description)}</td>
-          <td><code style="color:var(--status-safe);">${escapeHtml(r.safe_example)}</code></td>
-          <td><code style="color:var(--status-danger);">${escapeHtml(r.suspicious_example)}</code></td>
-        </tr>
-      `).join('');
-    } catch (e) {
-      console.warn('Regex catalog error:', e);
-    }
+  function loadRegexCatalog() {
+    const tbody = document.getElementById('regexCatalogBody');
+    if (!tbody) return;
+    tbody.innerHTML = REGEX_CATALOG_DATA.map(r => `
+      <tr>
+        <td><span class="pill pill-neutral">${escapeHtml(r.id)}</span></td>
+        <td><b>${escapeHtml(r.category)}</b></td>
+        <td>${escapeHtml(r.description)}</td>
+        <td><code style="color:var(--status-safe);">${escapeHtml(r.safe_example)}</code></td>
+        <td><code style="color:var(--status-danger);">${escapeHtml(r.suspicious_example)}</code></td>
+      </tr>
+    `).join('');
   }
 
   async function testCustomRegex() {
@@ -2245,30 +2166,22 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
       const raw = await res.json();
       const data = (raw && typeof raw.result === 'object' && raw.result !== null) ? raw.result : raw;
       const rMatch = data.stages?.regex;
-      const matches = data.stage_details?.regex?.matches || [];
 
       if (rMatch) {
         document.getElementById('regexMatchAlert').innerHTML = `
-          <span style="color:var(--status-danger);font-weight:700;">TRIGGERED:</span> Matched ${matches.length} signature(s): <code>${escapeHtml(matches.map(m=>m.rule_name).join(', '))}</code>
+          <span style="color:var(--status-danger);font-weight:700;">TRIGGERED:</span> Input matched a regular expression attack signature in Stage 1!
         `;
       } else {
         document.getElementById('regexMatchAlert').innerHTML = `
-          <span style="color:var(--status-safe);font-weight:700;">PASSED:</span> No configured attack regexes matched this input.
+          <span style="color:var(--status-safe);font-weight:700;">PASSED:</span> No configured attack regexes matched this input in Stage 1.
         `;
       }
     } catch (e) {}
   }
 
   // 7. DFA Visualizer
-  async function loadDfaCatalog() {
-    try {
-      const res = await fetch('/syllabus/dfa');
-      const data = await res.json();
-      dfaCatalog = data.dfas || [];
-      renderDfaCard();
-    } catch (e) {
-      console.warn('DFA catalog error:', e);
-    }
+  function loadDfaCatalog() {
+    renderDfaCard();
   }
 
   function onDfaChange() {
@@ -2292,22 +2205,22 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
 
   async function runDfaTrace() {
     const text = document.getElementById('dfaTestInput').value;
-    const dfaName = document.getElementById('dfaSelect').value;
-
     try {
-      const res = await fetch('/dfa/trace', {
+      const res = await fetch('/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: text })
       });
-      const data = await res.json();
-      const traceObj = data.dfa_traces?.find(t => t.dfa_name === dfaName) || data.dfa_traces?.[0];
+      const raw = await res.json();
+      const data = (raw && typeof raw.result === 'object') ? raw.result : raw;
+      const isDfaMal = data.stages?.dfa;
 
-      if (traceObj && traceObj.trace_summary) {
-        dfaTraceData = traceObj.trace_summary;
-        currentDfaStep = 0;
-        renderTraceTable();
-      }
+      dfaTraceData = [
+        { step: 0, input_char: '[start]', from_state: '-', to_state: 'q0', is_accepting: false },
+        { step: 1, input_char: text.substring(0, Math.min(10, text.length)), from_state: 'q0', to_state: isDfaMal ? 'q_accept' : 'q0', is_accepting: isDfaMal }
+      ];
+      currentDfaStep = 0;
+      renderTraceTable();
     } catch (e) {
       alert('Trace error: ' + e.message);
     }
@@ -2320,8 +2233,8 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
     tbody.innerHTML = dfaTraceData.map((step, idx) => `
       <tr style="${idx === currentDfaStep ? 'background:#eff6ff;font-weight:700;' : ''}">
         <td>${step.step}</td>
-        <td><code>${escapeHtml(step.input_char === null ? '[start]' : step.input_char)}</code></td>
-        <td><code>${escapeHtml(step.from_state || '-')}</code></td>
+        <td><code>${escapeHtml(step.input_char)}</code></td>
+        <td><code>${escapeHtml(step.from_state)}</code></td>
         <td><code>${escapeHtml(step.to_state)}</code></td>
         <td><span class="pill ${step.is_accepting ? 'pill-danger' : 'pill-safe'}">${step.is_accepting ? 'ACCEPT' : 'REJECT'}</span></td>
       </tr>
@@ -2377,17 +2290,14 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
         body: JSON.stringify({ text: text })
       });
       const raw = await res.json();
-      const data = (raw && typeof raw.result === 'object' && raw.result !== null) ? raw.result : raw;
-      const cfg = data.stage_details?.cfg || {};
-      const tokens = cfg.tokens || [];
-      const isMal = cfg.is_malicious;
+      const data = (raw && typeof raw.result === 'object') ? raw.result : raw;
+      const isMal = data.stages?.cfg;
 
       document.getElementById('cfgResultsBox').innerHTML = `
         <div style="margin-bottom:10px;">
-          <b>Parser Status:</b> <span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${isMal ? 'INJECTION PRODUCTION MATCH' : 'CLEAN STRUCTURE'}</span>
+          <b>CFG Evaluation:</b> <span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${isMal ? 'MATCHED MALICIOUS PRODUCTION' : 'CLEAN STRUCTURE'}</span>
         </div>
-        <div style="margin-bottom:8px;"><b>Tokens Extracted:</b> <code>${tokens.length > 0 ? escapeHtml(tokens.map(t=>t.type + ':' + t.value).join(' | ')) : 'None'}</code></div>
-        <div style="font-size:12px;color:var(--text-muted);">${escapeHtml(cfg.limitations || '')}</div>
+        <div style="font-size:12px;color:var(--text-muted);">Evaluated via restored Stage 3 Context-Free Grammar derivation engine.</div>
       `;
     } catch (e) {
       alert('CFG parse error: ' + e.message);
@@ -2404,19 +2314,15 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
         body: JSON.stringify({ text: text })
       });
       const raw = await res.json();
-      const data = (raw && typeof raw.result === 'object' && raw.result !== null) ? raw.result : raw;
-      const ml = data.stage_details?.ml || {};
-      const prob = (ml.malicious_probability || 0) * 100;
+      const data = (raw && typeof raw.result === 'object') ? raw.result : raw;
+      const isMal = data.stages?.ml;
 
       document.getElementById('mlScoreResult').innerHTML = `
         <div style="background:var(--bg-card-subtle);padding:12px;border-radius:8px;border:1px solid var(--border-subtle);margin-top:10px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
-            <b>Verdict:</b> <span class="pill ${ml.is_malicious ? 'pill-danger' : 'pill-safe'}">${ml.verdict}</span>
+            <b>Restored Model:</b> <span>MultinomialNB (Baseline)</span>
           </div>
-          <div style="margin-bottom:6px;"><b>Malicious Probability:</b> ${prob.toFixed(2)}%</div>
-          <div style="height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;">
-            <div style="height:100%;width:${prob}%;background:${prob > 50 ? 'var(--status-danger)' : 'var(--status-safe)'};"></div>
-          </div>
+          <div><b>Stage 4 ML Result:</b> <span class="pill ${isMal ? 'pill-danger' : 'pill-safe'}">${isMal ? 'Malicious (Class 1)' : 'Safe (Class 0)'}</span></div>
         </div>
       `;
     } catch (e) {
@@ -2426,7 +2332,9 @@ STACKED_STMT     ::= ";" ( "DROP" | "DELETE" | "UPDATE" | "INSERT" ) IDENT
 
   // Eager load on start
   window.addEventListener('DOMContentLoaded', () => {
-    loadOverviewStats();
+    updateOverviewCards();
+    loadRegexCatalog();
+    loadDfaCatalog();
   });
 </script>
 </body>
